@@ -1,0 +1,14 @@
+-- Create Testimonials/Comments table
+CREATE TABLE IF NOT EXISTS testimonials (
+  id VARCHAR(36) PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  username VARCHAR(255) NOT NULL,
+  body TEXT NOT NULL,
+  img VARCHAR(500),
+  status ENUM('PENDING', 'APPROVED', 'REJECTED') DEFAULT 'PENDING',
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_status (status),
+  INDEX idx_createdAt (createdAt)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+

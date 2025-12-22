@@ -1,0 +1,405 @@
+"use client"
+
+import React, { createContext, useContext, useEffect, useState } from "react"
+
+type Language = "en" | "pt"
+
+type LanguageContextValue = {
+  language: Language
+  setLanguage: (lang: Language) => void
+  t: (key: string) => string
+}
+
+const translations: Record<Language, Record<string, string>> = {
+  en: {
+    // Header
+    "header.language": "Language",
+    "header.english": "English",
+    "header.portuguese": "Portuguese (Portugal)",
+    "header.dashboard": "Dashboard",
+    "header.newDevice": "New Device",
+    "header.allDevices": "All Devices",
+    "header.team": "Team",
+    "header.trash": "Trash",
+    "header.logout": "Logout",
+
+    // New ticket page
+    "page.newTicket.title": "New Repair Device",
+    "page.newTicket.subtitle": "Enter customer and device information",
+    "page.newTicket.customerDeviceInformation": "Customer & Device Information",
+    "page.newTicket.print": "Print",
+    "page.newTicket.connectPrinter": "Connect Printer",
+    "page.newTicket.printerConnected": "Printer Connected",
+    "page.newTicket.selectPrinter": "Select Printer",
+    "page.newTicket.noPrinter": "No printer available",
+    "page.newTicket.printing": "Printing...",
+    "page.newTicket.printSuccess": "Print job sent successfully",
+    "page.newTicket.printError": "Error printing. Please try again.",
+
+    // Tickets page
+    "page.tickets.title": "Devices Information",
+    "page.tickets.subtitle": "Search and manage all device information",
+    "page.tickets.print": "Print",
+
+    // NewRepairTicketForm labels
+    "form.customerName": "Customer Name",
+    "form.contactNumber": "Contact Number",
+    "form.model": "Model",
+    "form.imei": "IMEI Number",
+    "form.serviceNames": "Service Name(s)",
+    "form.price": "Price for Service",
+    "form.technicianNotes": "Technician Notes",
+    "form.condition": "Mobile Condition (On Arrival)",
+    "form.createDeviceEntry": "Create Device Entry",
+    "form.cancel": "Cancel",
+
+    // NewRepairTicketForm placeholders
+    "placeholder.customerName": "John Doe",
+    "placeholder.contactNumber": "+1 234 567 8900",
+    "placeholder.model": "iPhone 14 Pro",
+    "placeholder.imei": "123456789012345",
+    "placeholder.price": "99.99",
+    "placeholder.technicianNotes": "Describe the issue with the device...",
+    "placeholder.condition": "e.g. Cracked screen, heavy scratches, water damage signs...",
+
+    // Validation / alerts
+    "error.imei.exact": "IMEI Number must be exactly 15 digits.",
+    "error.imei.inline": "IMEI must be 15 digits (0-9).",
+    "error.service.required": "Please select at least one service.",
+    "error.device.notFound": "Device not found. It may have already been deleted.",
+
+    // SearchRepairTickets
+    "search.title": "Search Devices",
+    "search.results": "Results",
+    "search.results.device": "device",
+    "search.results.devices": "devices",
+    "search.searchLabel": "Search",
+    "search.searchPlaceholder": "Enter search term...",
+    "search.searchBy": "Search By",
+    "search.filterByStatus": "Filter by Status",
+    "search.noDevicesYet": "No repair devices yet.",
+    "search.noDevicesMatch": "No devices found matching your search.",
+
+    // Search fields
+    "search.field.all": "All Fields",
+    "search.field.name": "Customer Name",
+    "search.field.contact": "Phone Number",
+    "search.field.imei": "IMEI Number",
+    "search.field.model": "Model",
+    "search.field.service": "Service Name",
+    "search.field.problem": "Problem",
+    "search.field.condition": "Mobile Condition",
+    "search.field.price": "Price",
+    "search.field.status": "Status",
+    "search.field.repairNumber": "Repair Number",
+    "search.field.date": "Entry Date",
+
+    // Status filter
+    "status.all": "All Statuses",
+    "status.pending": "Pending",
+    "status.in_progress": "In Progress",
+    "status.completed": "Completed",
+    "status.delivered": "Out",
+
+    // Ticket details
+    "ticket.contact": "Contact:",
+    "ticket.imei": "IMEI:",
+    "ticket.model": "Model:",
+    "ticket.service": "Service:",
+    "ticket.technicianNotes": "Technician Notes:",
+    "ticket.condition": "Mobile Condition (On Arrival):",
+    "ticket.updateStatus": "Update Status:",
+    "ticket.deleteTitle": "Delete Device",
+    "ticket.deleteDescription": "Are you sure you want to delete the device entry for",
+    "ticket.deleteConfirm": "Delete",
+    "ticket.edit": "Edit",
+
+    // Dashboard
+    "dashboard.welcome": "Welcome back,",
+    "dashboard.welcomeBack": "Welcome back,",
+    "dashboard.subtitle": "Here's what's happening with your repair shop today.",
+    "dashboard.whatsHappening": "Here's what's happening with your repair shop today.",
+    "dashboard.recentDevicesInformation": "Recent Devices Information",
+    "dashboard.noRepairDevicesYet": "No repair devices yet. Create your first device!",
+
+    // Stats cards
+    "stats.total.title": "Total Devices",
+    "stats.total.subtitle": "All repair devices",
+    "stats.totalDevices": "Total Devices",
+    "stats.allRepairDevices": "All repair devices",
+    "stats.pending.title": "Pending",
+    "stats.pending.subtitle": "Awaiting service",
+    "stats.awaitingService": "Awaiting service",
+    "stats.inProgress.title": "In Progress",
+    "stats.inProgress.subtitle": "Currently being completed",
+    "stats.currentlyBeingCompleted": "Currently being completed",
+    "stats.completed.title": "Completed",
+    "stats.completed.subtitle": "Repairs finished",
+    "stats.repairsFinished": "Repairs finished",
+    "stats.out.title": "Out",
+    "stats.out.subtitle": "Returned to customers",
+    "stats.returnedToCustomers": "Returned to customers",
+
+    // Recent devices list
+    "recent.title": "Recent Devices Information",
+    "recent.empty": "No repair devices yet. Create your first device!",
+    "recent.conditionLabel": "Condition:",
+    "recent.imei": "IMEI:",
+    "recent.contact": "Contact:",
+
+    // Team management
+    "team.page.title": "Team Management",
+    "team.page.subtitle": "Manage team members and assign roles",
+    "team.members.title": "Team Members",
+    "team.members.total": "{count} total members",
+    "team.members.addButton": "+ Add Member",
+    "team.add.title": "Add New Team Member",
+    "team.add.fullName": "Full Name *",
+    "team.add.email": "Email Address *",
+    "team.add.emailHint": "Member will use this email to login",
+    "team.add.role": "Role *",
+    "team.add.role.member": "Team Member (Can view devices and add new devices)",
+    "team.add.role.admin": "Admin (Full access)",
+    "team.add.submit": "Add Team Member",
+    "team.credentials.title": "Credentials Generated!",
+    "team.credentials.subtitle": "Save these credentials for",
+    "team.credentials.username": "Username",
+    "team.credentials.password": "Password",
+    "team.credentials.copy": "Copy",
+    "team.credentials.usernameCopied": "Username copied to clipboard!",
+    "team.credentials.passwordCopied": "Password copied to clipboard!",
+    "team.credentials.warning": "⚠️ Please save these credentials. They cannot be retrieved later.",
+    "team.member.role.admin": "Admin",
+    "team.member.role.member": "Team Member",
+    "team.member.changeRole": "Change role",
+    "team.member.edit": "Edit",
+    "team.member.delete": "Delete",
+    "team.member.deleteTitle": "Delete Team Member",
+    "team.member.deleteDescription": "Are you sure you want to delete",
+    "team.member.deleteConfirm": "Delete",
+    "team.member.editTitle": "Edit Team Member",
+    "team.member.edit.fullName": "Full Name *",
+    "team.member.edit.email": "Email Address *",
+    "team.member.edit.role": "Role *",
+    "team.member.edit.save": "Save Changes",
+    "team.member.edit.cancel": "Cancel",
+    "team.noPermission": "You don't have permission to access this page. Only administrators can manage team members.",
+  },
+  pt: {
+    // Header
+    "header.language": "Idioma",
+    "header.english": "Inglês",
+    "header.portuguese": "Português (Portugal)",
+    "header.dashboard": "Painel",
+    "header.newDevice": "Novo Dispositivo",
+    "header.allDevices": "Todos os Dispositivos",
+    "header.team": "Equipa",
+    "header.trash": "Lixo",
+    "header.logout": "Terminar sessão",
+
+    // New ticket page
+    "page.newTicket.title": "Novo dispositivo para reparação",
+    "page.newTicket.subtitle": "Introduza os dados do cliente e do dispositivo",
+    "page.newTicket.customerDeviceInformation": "Informação do Cliente e do Dispositivo",
+    "page.newTicket.print": "Imprimir",
+    "page.newTicket.connectPrinter": "Ligar Impressora",
+    "page.newTicket.printerConnected": "Impressora Ligada",
+    "page.newTicket.selectPrinter": "Selecionar Impressora",
+    "page.newTicket.noPrinter": "Nenhuma impressora disponível",
+    "page.newTicket.printing": "A imprimir...",
+    "page.newTicket.printSuccess": "Trabalho de impressão enviado com sucesso",
+    "page.newTicket.printError": "Erro ao imprimir. Por favor, tente novamente.",
+
+    // Tickets page
+    "page.tickets.title": "Informação dos dispositivos",
+    "page.tickets.subtitle": "Pesquisar e gerir toda a informação dos dispositivos",
+    "page.tickets.print": "Imprimir",
+
+    // NewRepairTicketForm labels
+    "form.customerName": "Nome do cliente",
+    "form.contactNumber": "Número de contacto",
+    "form.model": "Modelo",
+    "form.imei": "Número IMEI",
+    "form.serviceNames": "Serviço(s)",
+    "form.price": "Preço do serviço",
+    "form.technicianNotes": "Notas do técnico",
+    "form.condition": "Condição do telemóvel (à chegada)",
+    "form.createDeviceEntry": "Criar registo do dispositivo",
+    "form.cancel": "Cancelar",
+
+    // NewRepairTicketForm placeholders
+    "placeholder.customerName": "João Silva",
+    "placeholder.contactNumber": "+351 912 345 678",
+    "placeholder.model": "iPhone 14 Pro",
+    "placeholder.imei": "123456789012345",
+    "placeholder.price": "99,99",
+    "placeholder.technicianNotes": "Descreva o problema do dispositivo...",
+    "placeholder.condition": "ex.: Ecrã rachado, riscos profundos, sinais de humidade...",
+
+    // Validation / alerts
+    "error.imei.exact": "O número IMEI deve ter exatamente 15 dígitos.",
+    "error.imei.inline": "O IMEI deve ter 15 dígitos (0-9).",
+    "error.service.required": "Selecione pelo menos um serviço.",
+    "error.device.notFound": "Dispositivo não encontrado. Pode já ter sido apagado.",
+
+    // SearchRepairTickets
+    "search.title": "Pesquisar dispositivos",
+    "search.results": "Resultados",
+    "search.results.device": "dispositivo",
+    "search.results.devices": "dispositivos",
+    "search.searchLabel": "Pesquisa",
+    "search.searchPlaceholder": "Introduza o termo de pesquisa...",
+    "search.searchBy": "Pesquisar por",
+    "search.filterByStatus": "Filtrar por estado",
+    "search.noDevicesYet": "Ainda não existem dispositivos para reparação.",
+    "search.noDevicesMatch": "Nenhum dispositivo encontrado para esta pesquisa.",
+
+    // Search fields
+    "search.field.all": "Todos os campos",
+    "search.field.name": "Nome do cliente",
+    "search.field.contact": "Número de telefone",
+    "search.field.imei": "Número IMEI",
+    "search.field.model": "Modelo",
+    "search.field.service": "Serviço",
+    "search.field.problem": "Problema",
+    "search.field.condition": "Condição do telemóvel",
+    "search.field.price": "Preço",
+    "search.field.status": "Estado",
+    "search.field.repairNumber": "Número de Reparação",
+    "search.field.date": "Data de entrada",
+
+    // Status filter
+    "status.all": "Todos os estados",
+    "status.pending": "Pendente",
+    "status.in_progress": "Em curso",
+    "status.completed": "Concluído",
+    "status.delivered": "Entregue",
+
+    // Ticket details
+    "ticket.contact": "Contacto:",
+    "ticket.imei": "IMEI:",
+    "ticket.model": "Modelo:",
+    "ticket.service": "Serviço:",
+    "ticket.technicianNotes": "Notas do técnico:",
+    "ticket.condition": "Condição do telemóvel (à chegada):",
+    "ticket.updateStatus": "Atualizar estado:",
+    "ticket.deleteTitle": "Eliminar dispositivo",
+    "ticket.deleteDescription": "Tem a certeza de que pretende eliminar o registo do dispositivo de",
+    "ticket.deleteConfirm": "Eliminar",
+    "ticket.edit": "Editar",
+
+    // Dashboard
+    "dashboard.welcome": "Bem‑vindo de volta,",
+    "dashboard.welcomeBack": "Bem‑vindo de volta,",
+    "dashboard.subtitle": "Veja o que está a acontecer hoje na sua loja de reparações.",
+    "dashboard.whatsHappening": "Veja o que está a acontecer hoje na sua loja de reparações.",
+    "dashboard.recentDevicesInformation": "Informação de Dispositivos Recentes",
+    "dashboard.noRepairDevicesYet": "Ainda não há dispositivos para reparação. Crie o seu primeiro dispositivo!",
+
+    // Stats cards
+    "stats.total.title": "Total de dispositivos",
+    "stats.total.subtitle": "Todos os dispositivos em reparação",
+    "stats.totalDevices": "Total de dispositivos",
+    "stats.allRepairDevices": "Todos os dispositivos em reparação",
+    "stats.pending.title": "Pendente",
+    "stats.pending.subtitle": "A aguardar serviço",
+    "stats.awaitingService": "A aguardar serviço",
+    "stats.inProgress.title": "Em curso",
+    "stats.inProgress.subtitle": "Atualmente em reparação",
+    "stats.currentlyBeingCompleted": "Atualmente em reparação",
+    "stats.completed.title": "Concluído",
+    "stats.completed.subtitle": "Reparações finalizadas",
+    "stats.repairsFinished": "Reparações finalizadas",
+    "stats.out.title": "Entregue",
+    "stats.out.subtitle": "Devolvidos aos clientes",
+    "stats.returnedToCustomers": "Devolvidos aos clientes",
+
+    // Recent devices list
+    "recent.title": "Informação recente de dispositivos",
+    "recent.empty": "Ainda não existem dispositivos para reparação. Crie o primeiro!",
+    "recent.conditionLabel": "Condição:",
+    "recent.imei": "IMEI:",
+    "recent.contact": "Contacto:",
+
+    // Team management
+    "team.page.title": "Gestão de equipa",
+    "team.page.subtitle": "Gerir membros da equipa e atribuir funções",
+    "team.members.title": "Membros da equipa",
+    "team.members.total": "{count} membros no total",
+    "team.members.addButton": "+ Adicionar membro",
+    "team.add.title": "Adicionar novo membro da equipa",
+    "team.add.fullName": "Nome completo *",
+    "team.add.email": "Endereço de email *",
+    "team.add.emailHint": "O membro irá utilizar este email para iniciar sessão",
+    "team.add.role": "Função *",
+    "team.add.role.member": "Membro da equipa (pode ver e adicionar dispositivos)",
+    "team.add.role.admin": "Administrador (acesso total)",
+    "team.add.submit": "Adicionar membro da equipa",
+    "team.credentials.title": "Credenciais geradas!",
+    "team.credentials.subtitle": "Guarde estas credenciais para",
+    "team.credentials.username": "Nome de utilizador",
+    "team.credentials.password": "Palavra‑passe",
+    "team.credentials.copy": "Copiar",
+    "team.credentials.usernameCopied": "Nome de utilizador copiado para a área de transferência!",
+    "team.credentials.passwordCopied": "Palavra‑passe copiada para a área de transferência!",
+    "team.credentials.warning": "⚠️ Guarde estas credenciais. Não poderão ser recuperadas mais tarde.",
+    "team.member.role.admin": "Administrador",
+    "team.member.role.member": "Membro da equipa",
+    "team.member.changeRole": "Alterar função",
+    "team.member.edit": "Editar",
+    "team.member.delete": "Eliminar",
+    "team.member.deleteTitle": "Eliminar membro da equipa",
+    "team.member.deleteDescription": "Tem a certeza de que pretende eliminar",
+    "team.member.deleteConfirm": "Eliminar",
+    "team.member.editTitle": "Editar membro da equipa",
+    "team.member.edit.fullName": "Nome completo *",
+    "team.member.edit.email": "Endereço de email *",
+    "team.member.edit.role": "Função *",
+    "team.member.edit.save": "Guardar alterações",
+    "team.member.edit.cancel": "Cancelar",
+    "team.noPermission": "Não tem permissão para aceder a esta página. Apenas administradores podem gerir membros da equipa.",
+  },
+}
+
+const LanguageContext = createContext<LanguageContextValue | undefined>(undefined)
+
+export function LanguageProvider({ children }: { children: React.ReactNode }) {
+  const [language, setLanguageState] = useState<Language>("en")
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const stored = window.localStorage.getItem("language")
+    if (stored === "en" || stored === "pt") {
+      setLanguageState(stored)
+    }
+  }, [])
+
+  const setLanguage = (lang: Language) => {
+    setLanguageState(lang)
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("language", lang)
+    }
+  }
+
+  const t = (key: string) => {
+    const current = translations[language][key]
+    if (current !== undefined) return current
+    const fallback = translations.en[key]
+    return fallback ?? key
+  }
+
+  return (
+    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+      {children}
+    </LanguageContext.Provider>
+  )
+}
+
+export function useTranslation() {
+  const ctx = useContext(LanguageContext)
+  if (!ctx) {
+    throw new Error("useTranslation must be used within a LanguageProvider")
+  }
+  return ctx
+}
+

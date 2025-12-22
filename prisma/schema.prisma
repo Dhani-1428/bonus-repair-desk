@@ -1,0 +1,160 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+  SUPER_ADMIN
+}
+
+enum SubscriptionPlan {
+  MONTHLY
+  THREE_MONTH
+  SIX_MONTH
+  TWELVE_MONTH
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  PENDING
+  FREE_TRIAL
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum RepairStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  DELIVERED
+  CANCELLED
+}
+
+// Global Users table - accessible by super admin
+model User {
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  password      String
+  role          Role     @default(USER)
+  shopName      String?
+  contactNumber String?
+  tenantId      String   @unique @default(uuid()) // Unique tenant identifier
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  subscriptions      Subscription[]
+  loginHistory      LoginHistory[]
+  subscriptionHistory SubscriptionHistory[]
+  paymentRequests   PaymentRequest[]
+  
+  @@map("users")
+  @@index([email])
+  @@index([tenantId])
+}
+
+// Global Subscriptions table
+model Subscription {
+  id            String             @id @default(uuid())
+  userId        String
+  tenantId      String // Tenant ID for filtering
+  plan          SubscriptionPlan
+  status        SubscriptionStatus @default(FREE_TRIAL)
+  startDate     DateTime
+  endDate       DateTime
+  price         Float?
+  paymentStatus PaymentStatus?
+  paymentId     String?
+  isFreeTrial   Boolean            @default(false)
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("subscriptions")
+  @@index([userId])
+  @@index([tenantId])
+  @@index([status])
+}
+
+// Global Subscription History
+model SubscriptionHistory {
+  id            String             @id @default(uuid())
+  userId        String
+  tenantId      String
+  plan          SubscriptionPlan
+  status        SubscriptionStatus
+  startDate     DateTime
+  endDate       DateTime
+  price         Float?
+  paymentStatus PaymentStatus?
+  paymentId     String?
+  isFreeTrial   Boolean            @default(false)
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@map("subscription_history")
+  @@index([userId])
+  @@index([tenantId])
+}
+
+// Global Login History
+model LoginHistory {
+  id        String   @id @default(uuid())
+  userId    String
+  tenantId  String
+  timestamp DateTime @default(now())
+  ip        String?
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("login_history")
+  @@index([userId])
+  @@index([tenantId])
+  @@index([timestamp])
+}
+
+// Global Payment Requests
+model PaymentRequest {
+  id        String         @id @default(uuid())
+  userId    String
+  tenantId  String
+  plan      SubscriptionPlan
+  planName  String
+  price     Float
+  months    Int
+  startDate DateTime
+  endDate   DateTime
+  status    PaymentStatus  @default(PENDING)
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("payment_requests")
+  @@index([userId])
+  @@index([tenantId])
+  @@index([status])
+}
+
+// Tenant-specific tables will be created dynamically
+// These models represent the structure but tables are created per tenant

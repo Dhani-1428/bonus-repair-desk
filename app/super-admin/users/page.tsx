@@ -1,0 +1,851 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { DashboardLayout } from "@/components/dashboard-layout"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { useAuth } from "@/hooks/use-auth"
+import { getAllUsers, getUserData, isSuperAdmin } from "@/lib/storage"
+import { getAllSubscriptions, isExpired, getDaysUntilExpiration, getSubscriptionEndDate } from "@/lib/subscription-utils"
+import { PLAN_PRICING } from "@/lib/constants"
+import { toast } from "sonner"
+import Link from "next/link"
+import { Download, Eye, EyeOff, Info, Edit, Trash2 } from "lucide-react"
+import { UserDetailsDialog } from "@/components/user-details-dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+
+interface UserAnalytics {
+  userId: string
+  userName: string
+  userEmail: string
+  shopName: string
+  password: string
+  totalRevenue: number
+  subscriptionPlan: string
+  subscriptionStatus: string
+  daysUntilExpiration: number
+  signupDate: string
+  lastLogin?: string
+  totalLogins: number
+  totalDevices: number
+  pendingDevices: number
+  inProgressDevices: number
+  completedDevices: number
+}
+
+export default function UsersInformationPage() {
+  const router = useRouter()
+  const { user, loading } = useAuth()
+  const [users, setUsers] = useState<any[]>([])
+  const [userAnalytics, setUserAnalytics] = useState<UserAnalytics[]>([])
+  const [searchTerm, setSearchTerm] = useState("")
+  const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({})
+  const [selectedUserForSubscription, setSelectedUserForSubscription] = useState<UserAnalytics | null>(null)
+  const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false)
+  const [selectedUserForDetails, setSelectedUserForDetails] = useState<UserAnalytics | null>(null)
+  const [isUserDetailsDialogOpen, setIsUserDetailsDialogOpen] = useState(false)
+  const [selectedUserForEdit, setSelectedUserForEdit] = useState<UserAnalytics | null>(null)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [editFormData, setEditFormData] = useState({
+    name: "",
+    email: "",
+    shopName: "",
+    contactNumber: "",
+  })
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [userToDelete, setUserToDelete] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (loading) return
+
+    if (!user) {
+      router.push("/login")
+      return
+    }
+
+    if (user.role !== "SUPER_ADMIN" && user.role !== "super_admin" && user.email !== "superadmin@admin.com") {
+      router.push("/dashboard")
+      return
+    }
+
+    loadUsers()
+  }, [user, loading, router])
+
+  const loadUsers = async () => {
+    try {
+      // Fetch users from API
+      const response = await fetch("/api/users")
+      if (response.ok) {
+        const data = await response.json()
+        const allUsers = data.users ? data.users.filter((u: any) => u.role !== "SUPER_ADMIN" && u.role !== "super_admin") : []
+        setUsers(allUsers)
+        await calculateAnalytics(allUsers)
+      } else {
+        // Fallback to API function
+        const allUsers = await getAllUsers()
+        const filtered = allUsers.filter((u: any) => u.role !== "SUPER_ADMIN" && u.role !== "super_admin")
+        setUsers(filtered)
+        await calculateAnalytics(filtered)
+      }
+    } catch (error) {
+      console.error("Error loading users:", error)
+      // Fallback to API function
+      try {
+        const allUsers = await getAllUsers()
+        const filtered = allUsers.filter((u: any) => u.role !== "SUPER_ADMIN" && u.role !== "super_admin")
+        setUsers(filtered)
+        await calculateAnalytics(filtered)
+      } catch (fallbackError) {
+        console.error("Fallback also failed:", fallbackError)
+        setUsers([])
+      }
+    }
+  }
+
+  const calculateAnalytics = async (allUsers: any[]) => {
+    const allSubscriptions = getAllSubscriptions()
+    const analytics: UserAnalytics[] = []
+
+    // Use Promise.all to fetch all tickets in parallel
+    const userTicketsPromises = allUsers.map(async (u: any) => {
+      let ticketsArray: any[] = []
+      
+      try {
+        // Fetch tenant data from database using tenantId
+        if (u.tenantId) {
+          const response = await fetch(`/api/super-admin/tenants/${u.tenantId}`)
+          if (response.ok) {
+            const tenantData = await response.json()
+            ticketsArray = Array.isArray(tenantData.data?.repairTickets) ? tenantData.data.repairTickets : []
+          } else {
+            // Fallback to API endpoint with userId
+            const tickets = await getUserData<any[]>("repairTickets", [], u.id)
+            ticketsArray = Array.isArray(tickets) ? tickets : []
+          }
+        } else {
+          // Fallback to API endpoint with userId
+      const tickets = await getUserData<any[]>("repairTickets", [], u.id)
+          ticketsArray = Array.isArray(tickets) ? tickets : []
+        }
+      } catch (error) {
+        console.error(`Error fetching tickets for user ${u.id}:`, error)
+        // Fallback to empty array
+        ticketsArray = []
+      }
+      
+      // Calculate analytics
+      const totalRevenue = ticketsArray.reduce((sum: number, ticket: any) => sum + (parseFloat(ticket.price) || 0), 0)
+      
+      // Get subscription info
+      const userSub = allSubscriptions.find((s: any) => s.userId === u.id)
+      const daysUntilExpiration = userSub ? getDaysUntilExpiration(userSub) : 0
+      
+      // Get login history from database
+      let lastLogin: string | null = null
+      let totalLogins = 0
+      try {
+        const loginResponse = await fetch(`/api/login-history?userId=${u.id}`)
+        if (loginResponse.ok) {
+          const loginData = await loginResponse.json()
+          const loginHistory = Array.isArray(loginData.history) ? loginData.history : []
+          totalLogins = loginHistory.length
+          if (loginHistory.length > 0) {
+            // Sort by timestamp descending and get the most recent
+            const sorted = loginHistory.sort((a: any, b: any) => 
+              new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+            )
+            lastLogin = sorted[0].timestamp
+          }
+        }
+      } catch (error) {
+        console.error(`Error fetching login history for user ${u.id}:`, error)
+      }
+
+      // Get device statistics
+      const pendingDevices = ticketsArray.filter((t: any) => 
+        t.status === "PENDING" || t.status === "pending"
+      ).length
+      const inProgressDevices = ticketsArray.filter((t: any) => 
+        t.status === "IN_PROGRESS" || t.status === "in-progress" || t.status === "in_progress"
+      ).length
+      const completedDevices = ticketsArray.filter((t: any) => 
+        t.status === "COMPLETED" || t.status === "completed"
+      ).length
+
+      return {
+        userId: u.id,
+        userName: u.name,
+        userEmail: u.email,
+        shopName: u.shopName || "-",
+        password: u.password || "N/A",
+        totalRevenue,
+        subscriptionPlan: userSub ? PLAN_PRICING[userSub.plan]?.name || userSub.plan : "No Subscription",
+        subscriptionStatus: userSub ? (isExpired(userSub) ? "Expired" : userSub.status === "free_trial" ? "Free Trial" : userSub.status === "pending" ? "Pending" : "Active") : "No Subscription",
+        daysUntilExpiration: daysUntilExpiration,
+        signupDate: u.createdAt,
+        lastLogin: lastLogin,
+        totalLogins: totalLogins,
+        totalDevices: ticketsArray.length,
+        pendingDevices,
+        inProgressDevices,
+        completedDevices,
+      }
+    })
+
+    const results = await Promise.all(userTicketsPromises)
+    analytics.push(...results)
+
+    setUserAnalytics(analytics)
+  }
+
+  const togglePasswordVisibility = (userId: string) => {
+    setShowPasswords(prev => ({
+      ...prev,
+      [userId]: !prev[userId]
+    }))
+  }
+
+  const exportToCSV = () => {
+    const headers = [
+      "User Name",
+      "Email",
+      "Password",
+      "Shop Name",
+      "Subscription Plan",
+      "Status",
+      "Days Left",
+      "Total Revenue (€)"
+    ]
+
+    const rows = filteredAnalytics.map(analytics => [
+      analytics.userName,
+      analytics.userEmail,
+      analytics.password,
+      analytics.shopName,
+      analytics.subscriptionPlan,
+      analytics.subscriptionStatus,
+      analytics.daysUntilExpiration >= 0 ? analytics.daysUntilExpiration : "Expired",
+      Number.parseFloat(analytics.totalRevenue || 0).toFixed(2)
+    ])
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(","))
+    ].join("\n")
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+    const link = document.createElement("a")
+    const url = URL.createObjectURL(blob)
+    link.setAttribute("href", url)
+    link.setAttribute("download", `users_analytics_${new Date().toISOString().split('T')[0]}.csv`)
+    link.style.visibility = "hidden"
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    toast.success("Data exported to CSV successfully!")
+  }
+
+  const filteredAnalytics = userAnalytics.filter((analytics) =>
+    analytics.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    analytics.userEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    analytics.shopName.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (user.role !== "SUPER_ADMIN" && user.role !== "super_admin" && user.email !== "superadmin@admin.com") {
+    return null
+  }
+
+  const allSubscriptions = getAllSubscriptions()
+
+  return (
+    <DashboardLayout>
+      <div className="space-y-6 text-white">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-balance text-white">
+              Users Information
+            </h1>
+            <p className="text-gray-300 text-balance">
+              Analytics, Login Credentials & Subscription History
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              onClick={exportToCSV}
+              variant="outline"
+              className="border-gray-700 bg-gray-900/50 text-white hover:bg-gray-800"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export to CSV
+            </Button>
+            <Link href="/super-admin">
+              <Button variant="outline" className="border-gray-700 bg-gray-900/50 text-white hover:bg-gray-800">
+                Back to Dashboard
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Search */}
+        <Card className="shadow-2xl border border-gray-800/50 bg-gradient-to-br from-gray-900/95 via-black/95 to-gray-900/95 backdrop-blur-sm">
+          <CardContent className="p-4">
+            <Input
+              placeholder="Search by name, email, or shop name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500"
+            />
+          </CardContent>
+        </Card>
+
+        {/* Excel-like Table */}
+        <Card className="shadow-2xl border border-gray-800/50 bg-gradient-to-br from-gray-900/95 via-black/95 to-gray-900/95 backdrop-blur-sm">
+          <CardHeader className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-b border-gray-800/50 rounded-t-lg px-6 py-4">
+            <CardTitle className="text-xl text-white">
+              Users Data Sheet ({filteredAnalytics.length} users)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <table className="w-full border-collapse table-fixed">
+              <thead>
+                <tr className="bg-gray-800/80 border-b border-gray-700">
+                  <th className="border-r border-gray-700 px-4 py-3 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider w-[15%]">
+                    User Name
+                  </th>
+                  <th className="border-r border-gray-700 px-4 py-3 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider w-[18%]">
+                    Email
+                  </th>
+                  <th className="border-r border-gray-700 px-4 py-3 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider w-[15%]">
+                    Password
+                  </th>
+                  <th className="border-r border-gray-700 px-4 py-3 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider w-[12%]">
+                    Shop Name
+                  </th>
+                  <th className="border-r border-gray-700 px-4 py-3 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider w-[15%]">
+                    Subscription Plan
+                  </th>
+                  <th className="border-r border-gray-700 px-4 py-3 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider w-[10%]">
+                    Status
+                  </th>
+                  <th className="border-r border-gray-700 px-4 py-3 text-center text-xs font-semibold text-gray-300 uppercase tracking-wider w-[8%]">
+                    Days Left
+                  </th>
+                  <th className="border-r border-gray-700 px-4 py-3 text-center text-xs font-semibold text-gray-300 uppercase tracking-wider w-[7%]">
+                    Total Revenue (€)
+                  </th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-300 uppercase tracking-wider w-[10%]">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-800/50">
+                {filteredAnalytics.length === 0 ? (
+                  <tr>
+                    <td colSpan={9} className="px-4 py-8 text-center text-gray-400">
+                      No users found
+                    </td>
+                  </tr>
+                ) : (
+                  filteredAnalytics.map((analytics, index) => (
+                    <tr
+                      key={analytics.userId}
+                      className={`hover:bg-gray-800/30 transition-colors ${
+                        index % 2 === 0 ? "bg-gray-900/30" : "bg-gray-900/10"
+                      }`}
+                    >
+                      <td className="border-r border-gray-700/50 px-4 py-3 text-sm font-medium text-white break-words">
+                        <div className="flex items-center gap-2">
+                          <span 
+                            className="cursor-pointer hover:text-blue-400 transition-colors"
+                            onClick={() => {
+                              setSelectedUserForDetails(analytics)
+                              setIsUserDetailsDialogOpen(true)
+                            }}
+                            title="Click to view full user details"
+                          >
+                            {analytics.userName}
+                          </span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedUserForSubscription(analytics)
+                              setIsSubscriptionDialogOpen(true)
+                            }}
+                            className="h-6 w-6 p-0 text-blue-400 hover:text-blue-300 hover:bg-blue-500/20"
+                            title="View subscription details"
+                          >
+                            <Info className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </td>
+                      <td className="border-r border-gray-700/50 px-4 py-3 text-sm text-gray-300 break-words">
+                        {analytics.userEmail}
+                      </td>
+                      <td className="border-r border-gray-700/50 px-4 py-3 text-sm text-gray-300">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-mono text-xs break-all">
+                            {showPasswords[analytics.userId] 
+                              ? analytics.password 
+                              : "•".repeat(analytics.password.length || 8)}
+                          </span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => togglePasswordVisibility(analytics.userId)}
+                            className="h-6 w-6 p-0 text-gray-400 hover:text-white shrink-0"
+                          >
+                            {showPasswords[analytics.userId] ? (
+                              <EyeOff className="w-3 h-3" />
+                            ) : (
+                              <Eye className="w-3 h-3" />
+                            )}
+                          </Button>
+                        </div>
+                      </td>
+                      <td className="border-r border-gray-700/50 px-4 py-3 text-sm text-gray-300 break-words">
+                        {analytics.shopName}
+                      </td>
+                      <td className="border-r border-gray-700/50 px-4 py-3 text-sm text-gray-300 break-words">
+                        {analytics.subscriptionPlan}
+                      </td>
+                      <td className="border-r border-gray-700/50 px-4 py-3 text-sm">
+                        <Badge
+                          className={
+                            analytics.subscriptionStatus === "Active"
+                              ? "bg-green-500/20 text-green-400 border-green-500/50"
+                              : analytics.subscriptionStatus === "Expired"
+                              ? "bg-red-500/20 text-red-400 border-red-500/50"
+                              : "bg-gray-500/20 text-gray-400 border-gray-500/50"
+                          }
+                        >
+                          {analytics.subscriptionStatus}
+                        </Badge>
+                      </td>
+                      <td className="border-r border-gray-700/50 px-4 py-3 text-sm text-center">
+                        {analytics.daysUntilExpiration >= 0 ? (
+                          <span className={analytics.daysUntilExpiration <= 7 ? "text-yellow-400 font-semibold" : "text-gray-300"}>
+                            {analytics.daysUntilExpiration}
+                          </span>
+                        ) : (
+                          <span className="text-red-400 font-semibold">Expired</span>
+                        )}
+                      </td>
+                      <td className="border-r border-gray-700/50 px-4 py-3 text-sm text-center text-gray-300 font-semibold">
+                        {Number.parseFloat(analytics.totalRevenue || 0).toFixed(2)}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              const user = users.find((u: any) => u.id === analytics.userId)
+                              if (user) {
+                                setEditFormData({
+                                  name: user.name || "",
+                                  email: user.email || "",
+                                  shopName: user.shopName || "",
+                                  contactNumber: user.contactNumber || "",
+                                })
+                                setSelectedUserForEdit(analytics)
+                                setIsEditDialogOpen(true)
+                              }
+                            }}
+                            className="h-8 w-8 p-0 text-blue-400 hover:text-blue-300 hover:bg-blue-500/20"
+                            title="Edit user"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setUserToDelete(analytics.userId)
+                            }}
+                            className="h-8 w-8 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/20"
+                            title="Delete user"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+
+        {/* User Subscription Dialog */}
+        <Dialog open={isSubscriptionDialogOpen} onOpenChange={setIsSubscriptionDialogOpen}>
+          <DialogContent className="max-w-3xl bg-gray-900 border-gray-700 max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-white">
+                Subscription Details - {selectedUserForSubscription?.userName}
+              </DialogTitle>
+            </DialogHeader>
+            {selectedUserForSubscription && (() => {
+              const allSubscriptions = getAllSubscriptions()
+              const userSub = allSubscriptions.find((s: any) => s.userId === selectedUserForSubscription.userId)
+              
+              return (
+                <div className="space-y-4">
+                  {userSub ? (
+                    <>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <p className="text-xs font-semibold text-gray-400">Plan</p>
+                          <p className="text-sm text-white">{selectedUserForSubscription.subscriptionPlan}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs font-semibold text-gray-400">Status</p>
+                          <Badge
+                            className={
+                              selectedUserForSubscription.subscriptionStatus === "Active"
+                                ? "bg-green-500/20 text-green-400 border-green-500/50"
+                                : selectedUserForSubscription.subscriptionStatus === "Expired"
+                                ? "bg-red-500/20 text-red-400 border-red-500/50"
+                                : "bg-gray-500/20 text-gray-400 border-gray-500/50"
+                            }
+                          >
+                            {selectedUserForSubscription.subscriptionStatus}
+                          </Badge>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs font-semibold text-gray-400">Start Date</p>
+                          <p className="text-sm text-white">
+                            {new Date(userSub.startDate).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs font-semibold text-gray-400">End Date</p>
+                          <p className="text-sm text-white">
+                            {getSubscriptionEndDate(userSub).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs font-semibold text-gray-400">Price</p>
+                          <p className="text-sm text-white font-semibold">€{PLAN_PRICING[userSub.plan]?.price || 0}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs font-semibold text-gray-400">Days Left</p>
+                          <p className={`text-sm font-semibold ${
+                            selectedUserForSubscription.daysUntilExpiration >= 0
+                              ? selectedUserForSubscription.daysUntilExpiration <= 7
+                                ? "text-yellow-400"
+                                : "text-white"
+                              : "text-red-400"
+                          }`}>
+                            {selectedUserForSubscription.daysUntilExpiration >= 0
+                              ? selectedUserForSubscription.daysUntilExpiration
+                              : "Expired"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 pt-4 border-t border-gray-700">
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            // Save current subscription to history
+                            const subscriptionHistory = JSON.parse(localStorage.getItem(`subscription_history_${userSub.userId}`) || "[]")
+                            subscriptionHistory.push({
+                              ...userSub,
+                              status: "expired" as const,
+                            })
+                            localStorage.setItem(`subscription_history_${userSub.userId}`, JSON.stringify(subscriptionHistory.slice(-20)))
+
+                            const newEndDate = new Date(userSub.endDate)
+                            newEndDate.setMonth(newEndDate.getMonth() + 1)
+                            const updatedSub = {
+                              ...userSub,
+                              endDate: newEndDate.toISOString(),
+                              status: "active" as const,
+                            }
+                            localStorage.setItem(`subscription_${userSub.userId}`, JSON.stringify(updatedSub))
+                            toast.success("Subscription extended by 1 month!")
+                            setIsSubscriptionDialogOpen(false)
+                            loadUsers()
+                          }}
+                          className="flex-1 border-gray-600 bg-gray-800 text-white hover:bg-gray-700"
+                        >
+                          Extend 1 Month
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            // Save current subscription to history
+                            const subscriptionHistory = JSON.parse(localStorage.getItem(`subscription_history_${userSub.userId}`) || "[]")
+                            subscriptionHistory.push({
+                              ...userSub,
+                              status: "expired" as const,
+                            })
+                            localStorage.setItem(`subscription_history_${userSub.userId}`, JSON.stringify(subscriptionHistory.slice(-20)))
+
+                            const newEndDate = new Date(userSub.endDate)
+                            newEndDate.setMonth(newEndDate.getMonth() + 3)
+                            const updatedSub = {
+                              ...userSub,
+                              endDate: newEndDate.toISOString(),
+                              status: "active" as const,
+                            }
+                            localStorage.setItem(`subscription_${userSub.userId}`, JSON.stringify(updatedSub))
+                            toast.success("Subscription extended by 3 months!")
+                            setIsSubscriptionDialogOpen(false)
+                            loadUsers()
+                          }}
+                          className="flex-1 border-gray-600 bg-gray-800 text-white hover:bg-gray-700"
+                        >
+                          Extend 3 Months
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            // Save current subscription to history
+                            const subscriptionHistory = JSON.parse(localStorage.getItem(`subscription_history_${userSub.userId}`) || "[]")
+                            subscriptionHistory.push({
+                              ...userSub,
+                              status: "cancelled" as const,
+                            })
+                            localStorage.setItem(`subscription_history_${userSub.userId}`, JSON.stringify(subscriptionHistory.slice(-20)))
+
+                            const updatedSub = {
+                              ...userSub,
+                              status: "cancelled" as const,
+                            }
+                            localStorage.setItem(`subscription_${userSub.userId}`, JSON.stringify(updatedSub))
+                            toast.success("Subscription cancelled!")
+                            setIsSubscriptionDialogOpen(false)
+                            loadUsers()
+                          }}
+                          className="border-red-600/50 bg-red-900/20 text-red-400 hover:bg-red-900/40"
+                        >
+                          Cancel Subscription
+                        </Button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-gray-400">No subscription found for this user.</p>
+                    </div>
+                  )}
+                </div>
+              )
+            })()}
+          </DialogContent>
+        </Dialog>
+
+        {/* User Details Dialog */}
+        <UserDetailsDialog
+          open={isUserDetailsDialogOpen}
+          onOpenChange={setIsUserDetailsDialogOpen}
+          userDetails={selectedUserForDetails}
+          users={users}
+        />
+
+        {/* Edit User Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="max-w-2xl bg-gray-900 border-gray-700">
+            <DialogHeader>
+              <DialogTitle className="text-white text-2xl">
+                Edit User - {selectedUserForEdit?.userName}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-name" className="text-gray-200">
+                    Full Name <span className="text-red-400">*</span>
+                  </Label>
+                  <Input
+                    id="edit-name"
+                    value={editFormData.name}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, name: e.target.value }))}
+                    className="bg-gray-800 border-gray-700 text-white"
+                    required
+                  />
+                        </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-email" className="text-gray-200">
+                    Email <span className="text-red-400">*</span>
+                  </Label>
+                  <Input
+                    id="edit-email"
+                    type="email"
+                    value={editFormData.email}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, email: e.target.value }))}
+                    className="bg-gray-800 border-gray-700 text-white"
+                    required
+                  />
+                        </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-shopName" className="text-gray-200">
+                    Shop/Company Name
+                  </Label>
+                  <Input
+                    id="edit-shopName"
+                    value={editFormData.shopName}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, shopName: e.target.value }))}
+                    className="bg-gray-800 border-gray-700 text-white"
+                  />
+                        </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-contactNumber" className="text-gray-200">
+                    Contact Number
+                  </Label>
+                  <Input
+                    id="edit-contactNumber"
+                    value={editFormData.contactNumber}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, contactNumber: e.target.value }))}
+                    className="bg-gray-800 border-gray-700 text-white"
+                  />
+                        </div>
+                      </div>
+              <div className="flex gap-2 pt-4 border-t border-gray-700">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsEditDialogOpen(false)}
+                  className="flex-1 border-gray-600 bg-gray-800 text-white hover:bg-gray-700"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={async () => {
+                    if (!selectedUserForEdit) return
+                    
+                    if (!editFormData.name || !editFormData.email) {
+                      toast.error("Name and email are required")
+                      return
+                    }
+
+                    try {
+                      const response = await fetch("/api/users", {
+                        method: "PUT",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                          id: selectedUserForEdit.userId,
+                          name: editFormData.name,
+                          email: editFormData.email,
+                          shopName: editFormData.shopName || null,
+                          contactNumber: editFormData.contactNumber || null,
+                        }),
+                      })
+
+                      if (response.ok) {
+                        toast.success("User updated successfully!")
+                        setIsEditDialogOpen(false)
+                        await loadUsers()
+                      } else {
+                        const error = await response.json()
+                        toast.error(error.error || "Failed to update user")
+                      }
+                    } catch (error) {
+                      console.error("Error updating user:", error)
+                      toast.error("Failed to update user")
+                    }
+                  }}
+                  className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
+                >
+                  Save Changes
+                </Button>
+                        </div>
+                      </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={!!userToDelete} onOpenChange={(open) => !open && setUserToDelete(null)}>
+          <AlertDialogContent className="bg-gray-900 border-gray-700">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-white">Delete User</AlertDialogTitle>
+              <AlertDialogDescription className="text-gray-300">
+                Are you sure you want to delete this user? This action cannot be undone and will permanently delete:
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li>User account and all associated data</li>
+                  <li>User's subscription information</li>
+                  <li>User's repair tickets and history</li>
+                </ul>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel 
+                onClick={() => setUserToDelete(null)}
+                className="border-gray-600 bg-gray-800 text-white hover:bg-gray-700"
+              >
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={async () => {
+                  if (!userToDelete) return
+
+                  setIsDeleting(true)
+                  try {
+                    const response = await fetch(`/api/users?id=${userToDelete}`, {
+                      method: "DELETE",
+                    })
+
+                    if (response.ok) {
+                      toast.success("User deleted successfully!")
+                      setUserToDelete(null)
+                      await loadUsers()
+                    } else {
+                      const error = await response.json()
+                      toast.error(error.error || "Failed to delete user")
+                    }
+                  } catch (error) {
+                    console.error("Error deleting user:", error)
+                    toast.error("Failed to delete user")
+                  } finally {
+                    setIsDeleting(false)
+                  }
+                }}
+                disabled={isDeleting}
+                className="bg-red-600 text-white hover:bg-red-700"
+              >
+                {isDeleting ? "Deleting..." : "Delete User"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    </DashboardLayout>
+  )
+}
+

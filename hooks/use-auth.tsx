@@ -1,0 +1,462 @@
+"use client"
+
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import type { User, Subscription, SubscriptionPlan } from "@/lib/constants"
+import { sendWelcomeEmail } from "@/lib/email-service"
+
+interface AuthContextType {
+  user: User | null
+  subscription: Subscription | null
+  loading: boolean
+  login: (email: string, password: string) => Promise<User>
+  register: (name: string, email: string, password: string, shopName?: string, contactNumber?: string, selectedPlan?: SubscriptionPlan) => Promise<void>
+  logout: () => void
+  updateSubscription: (subscription: Subscription) => void
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null)
+  const [subscription, setSubscription] = useState<Subscription | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  // Initialize super admin and load user from session storage on mount
+  useEffect(() => {
+    // Initialize super admin in database if it doesn't exist
+    const initSuperAdmin = async () => {
+      try {
+        const response = await fetch("/api/users")
+        const data = await response.json()
+        const users = data.users || []
+        const superAdminExists = users.some((u: User) => u.email === "superadmin@admin.com")
+        
+        if (!superAdminExists) {
+          // Create super admin
+          await fetch("/api/users", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: "Super Admin",
+              email: "superadmin@admin.com",
+              password: "superadmin123",
+              role: "SUPER_ADMIN",
+              shopName: "System Administration",
+              contactNumber: "N/A",
+            }),
+          })
+        }
+      } catch (error) {
+        console.error("Error initializing super admin:", error)
+      }
+    }
+
+    initSuperAdmin()
+
+    // Load current user from session storage
+    const storedUser = sessionStorage.getItem("user")
+    const storedSubscription = sessionStorage.getItem("subscription")
+
+    if (storedUser) {
+      try {
+        if (storedUser.trim().startsWith("{") || storedUser.trim().startsWith("[")) {
+          const parsedUser = JSON.parse(storedUser)
+          setUser(parsedUser)
+          
+          // Load subscription from API
+          loadSubscription(parsedUser.id)
+        } else {
+          console.error("Invalid user data in sessionStorage")
+          sessionStorage.removeItem("user")
+        }
+      } catch (error) {
+        console.error("Error parsing user from sessionStorage:", error)
+        sessionStorage.removeItem("user")
+      }
+    } else if (storedSubscription) {
+      try {
+        if (storedSubscription.trim().startsWith("{") || storedSubscription.trim().startsWith("[")) {
+          const parsedSubscription = JSON.parse(storedSubscription)
+          setSubscription(parsedSubscription)
+        } else {
+          console.error("Invalid subscription data in sessionStorage")
+          sessionStorage.removeItem("subscription")
+        }
+      } catch (error) {
+        console.error("Error parsing subscription from sessionStorage:", error)
+        sessionStorage.removeItem("subscription")
+      }
+    }
+
+    setLoading(false)
+  }, [])
+
+  const loadSubscription = async (userId: string) => {
+    try {
+      const response = await fetch(`/api/subscriptions?userId=${userId}`)
+      const data = await response.json()
+      if (data.subscription) {
+        const sub = data.subscription
+        const subscriptionData: Subscription = {
+          id: sub.id,
+          userId: sub.userId,
+          plan: sub.plan,
+          status: sub.status,
+          startDate: sub.startDate,
+          endDate: sub.endDate,
+          price: sub.price,
+          paymentStatus: sub.paymentStatus,
+          paymentId: sub.paymentId,
+          isFreeTrial: sub.isFreeTrial,
+        }
+        setSubscription(subscriptionData)
+        sessionStorage.setItem("subscription", JSON.stringify(subscriptionData))
+      }
+    } catch (error) {
+      console.error("Error loading subscription:", error)
+    }
+  }
+
+  const login = async (email: string, password: string) => {
+    try {
+      let response: Response
+      try {
+        // Add timeout and better error handling for fetch
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 60000) // 60 second timeout
+        
+        response = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+          signal: controller.signal,
+        })
+        
+        clearTimeout(timeoutId)
+      } catch (fetchError: any) {
+        console.error("[Login] Network error:", fetchError?.message || fetchError)
+        
+        // Handle specific connection errors
+        if (fetchError?.name === "AbortError") {
+          throw new Error("Request timed out. Please check your connection and try again.")
+        }
+        if (fetchError?.message?.includes("ECONNRESET") || fetchError?.message?.includes("Connection lost")) {
+          throw new Error("Connection was reset. Please try again in a moment.")
+        }
+        if (fetchError?.message?.includes("Failed to fetch") || fetchError?.message?.includes("NetworkError")) {
+          throw new Error("Network error. Please check your internet connection and try again.")
+        }
+        
+        throw new Error("Network error. Please check your connection and try again.")
+      }
+
+      let data: any = null
+      let responseText = ""
+      try {
+        responseText = await response.text()
+        if (!responseText) {
+          console.error("[Login] Empty response from server")
+          console.error("[Login] Response status:", response.status, response.statusText)
+          throw new Error("Empty response from server. Please try again.")
+        }
+        try {
+          data = JSON.parse(responseText)
+        } catch (parseError) {
+          // If JSON parsing fails, create a structured error object
+          console.error("[Login] Failed to parse JSON:", parseError)
+          data = {
+            error: `Server returned invalid response (${response.status} ${response.statusText})`,
+            rawResponse: responseText.substring(0, 200)
+          }
+        }
+      } catch (jsonError: any) {
+        console.error("[Login] Failed to get response text:", jsonError?.message || jsonError)
+        console.error("[Login] Response status:", response.status, response.statusText)
+        // Create a fallback error object
+        data = {
+          error: `Failed to read server response (${response.status} ${response.statusText})`,
+          details: jsonError?.message
+        }
+      }
+
+      if (!response.ok) {
+        // Try to extract error message from various possible fields
+        const errorMessage = 
+          data?.error || 
+          data?.message || 
+          data?.details || 
+          (typeof data === "string" ? data : null) ||
+          `Login failed (${response.status} ${response.statusText})`
+        
+        console.error("[Login] API Error:", {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorMessage,
+          data: data && typeof data === "object" ? JSON.stringify(data, null, 2) : (data || "No data"),
+          rawResponse: responseText ? responseText.substring(0, 500) : "No response text"
+        })
+        
+        // Provide more specific error messages based on status code
+        if (response.status === 401) {
+          throw new Error("Invalid email or password. Please check your credentials and try again.")
+        } else if (response.status === 500) {
+          throw new Error(errorMessage || "Server error. Please try again later.")
+        } else {
+          throw new Error(errorMessage)
+        }
+      }
+
+      if (!data || !data.user) {
+        console.error("[Login] Missing user data in response:", data)
+        throw new Error("Invalid response: user data not found")
+      }
+
+      const userData = data.user
+      console.log("[Login] User data received:", { id: userData.id, email: userData.email, role: userData.role })
+
+      // Skip subscription check for super admin
+      if (userData.role === "SUPER_ADMIN" || userData.role === "super_admin") {
+        setUser(userData)
+        sessionStorage.setItem("user", JSON.stringify(userData))
+        sessionStorage.setItem("auth-token", "demo-token")
+        return userData
+      }
+
+      // Check subscription status for regular users
+      try {
+        const subResponse = await fetch(`/api/subscriptions?userId=${userData.id}`)
+        if (!subResponse.ok) {
+          console.warn("[Login] Failed to fetch subscription, but allowing login:", subResponse.status)
+          // Don't block login if subscription check fails - allow user to proceed
+        } else {
+          const subData = await subResponse.json()
+          const sub = subData.subscription
+
+          if (sub) {
+            const now = new Date()
+            const endDate = new Date(sub.endDate)
+            const isExpired = endDate < now
+            const isPending = sub.status === "PENDING" && sub.paymentStatus === "PENDING"
+
+            if (isExpired && sub.status !== "FREE_TRIAL" && sub.status !== "free_trial") {
+              throw new Error("Your subscription has expired. Please renew your subscription to continue using the admin panel.")
+            }
+
+            if (isPending) {
+              // Allow login but show warning - don't block access
+              console.warn("[Login] Payment pending, but allowing login")
+            }
+
+            if ((sub.status === "FREE_TRIAL" || sub.status === "free_trial") && isExpired) {
+              throw new Error("Your free trial has ended. Please subscribe to continue using the admin panel.")
+            }
+          } else {
+            // No subscription found - allow login but user will be redirected to subscription page
+            console.warn("[Login] No subscription found for user, but allowing login")
+          }
+        }
+      } catch (subError: any) {
+        // If subscription check fails, log but don't block login
+        console.error("[Login] Error checking subscription:", subError)
+        // Only throw if it's a subscription-related error (expired, etc.)
+        if (subError instanceof Error && subError.message.includes("subscription") || subError.message.includes("trial")) {
+          throw subError
+        }
+      }
+
+      setUser(userData)
+      sessionStorage.setItem("user", JSON.stringify(userData))
+      sessionStorage.setItem("auth-token", "demo-token")
+
+      // Load subscription
+      await loadSubscription(userData.id)
+
+      return userData
+    } catch (error: any) {
+      // If error is already an Error object with a message, log and throw it as is
+      if (error instanceof Error) {
+        // Handle connection reset errors with a user-friendly message
+        if (error.message.includes("ECONNRESET") || error.message.includes("Connection lost")) {
+          console.error("[Login] Database connection error:", error.message)
+          throw new Error("Database connection was lost. Please try again in a moment.")
+        }
+        console.error("[Login] Error:", error.message, error)
+        throw error
+      }
+      // Otherwise, create a new Error with a meaningful message
+      const errorMessage = error?.message || error?.error || "Login failed. Please try again."
+      console.error("[Login] Unknown error:", error)
+      throw new Error(errorMessage)
+    }
+  }
+
+  const register = async (
+    name: string,
+    email: string,
+    password: string,
+    shopName?: string,
+    contactNumber?: string,
+    selectedPlan?: SubscriptionPlan
+  ) => {
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          shopName,
+          contactNumber,
+          selectedPlan: selectedPlan || "MONTHLY",
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Registration failed")
+      }
+
+      // Send welcome email with credentials
+      try {
+        const userForEmail = {
+          id: data.user?.id || "",
+          name: name,
+          email: email,
+          role: "USER" as const,
+          shopName: data.user?.shopName || null,
+          contactNumber: data.user?.contactNumber || null,
+          tenantId: data.user?.tenantId || "",
+          createdAt: data.user?.createdAt || new Date().toISOString(),
+        }
+        await sendWelcomeEmail(userForEmail, password)
+      } catch (emailError) {
+        console.error("Error sending welcome email:", emailError)
+        // Don't fail registration if email fails
+      }
+
+      // Auto-login after registration
+      await login(email, password)
+    } catch (error: any) {
+      console.error("Registration error:", error)
+      throw error
+    }
+  }
+
+  const logout = async () => {
+    // Send emails about logout (non-blocking)
+    if (user) {
+      try {
+        const { sendAdminLogoutNotification, sendLogoutEmail } = await import("@/lib/email-service")
+        
+        // Send email to user
+        await sendLogoutEmail(user)
+        
+        // Send notification to admin (skip for super admin)
+        if (user.role !== "SUPER_ADMIN" && user.role !== "super_admin") {
+          await sendAdminLogoutNotification(user)
+        }
+      } catch (emailError) {
+        console.error("Error sending logout emails:", emailError)
+        // Don't fail logout if email fails
+      }
+    }
+
+    setUser(null)
+    setSubscription(null)
+    sessionStorage.removeItem("user")
+    sessionStorage.removeItem("subscription")
+    sessionStorage.removeItem("auth-token")
+    window.location.href = "/login"
+  }
+
+  const updateSubscription = async (subscriptionData: Subscription) => {
+    try {
+      // Try to update via API first
+      const response = await fetch("/api/subscriptions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: subscriptionData.userId,
+          plan: subscriptionData.plan,
+          status: subscriptionData.status,
+          startDate: subscriptionData.startDate,
+          endDate: subscriptionData.endDate,
+          price: subscriptionData.price,
+          paymentStatus: subscriptionData.paymentStatus,
+          paymentId: subscriptionData.paymentId,
+          isFreeTrial: subscriptionData.isFreeTrial,
+        }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.subscription) {
+          const updatedSub = data.subscription
+          const sub: Subscription = {
+            id: updatedSub.id,
+            userId: updatedSub.userId,
+            plan: updatedSub.plan,
+            status: updatedSub.status,
+            startDate: updatedSub.startDate,
+            endDate: updatedSub.endDate,
+            price: updatedSub.price,
+            paymentStatus: updatedSub.paymentStatus,
+            paymentId: updatedSub.paymentId,
+            isFreeTrial: updatedSub.isFreeTrial,
+          }
+
+          setSubscription(sub)
+          sessionStorage.setItem("subscription", JSON.stringify(sub))
+          // Also save to localStorage for backup
+          if (typeof window !== "undefined") {
+            localStorage.setItem(`subscription_${subscriptionData.userId}`, JSON.stringify(sub))
+          }
+          return
+        }
+      }
+      
+      // If API fails, fall back to localStorage/sessionStorage only
+      console.warn("API subscription update failed, using localStorage fallback")
+    } catch (error: any) {
+      console.warn("Error updating subscription via API, using localStorage fallback:", error)
+    }
+
+    // Fallback: Update localStorage and sessionStorage directly
+    try {
+      setSubscription(subscriptionData)
+      sessionStorage.setItem("subscription", JSON.stringify(subscriptionData))
+      if (typeof window !== "undefined") {
+        localStorage.setItem(`subscription_${subscriptionData.userId}`, JSON.stringify(subscriptionData))
+      }
+    } catch (error: any) {
+      console.error("Error updating subscription in storage:", error)
+      throw error
+    }
+  }
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        subscription,
+        loading,
+        login,
+        register,
+        logout,
+        updateSubscription,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  )
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext)
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider")
+  }
+  return context
+}
