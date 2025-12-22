@@ -61,14 +61,20 @@ export function TeamManagement() {
         // Get user from sessionStorage
         const userData = sessionStorage.getItem("user")
         if (userData) {
-          setCurrentUser(JSON.parse(userData))
-        }
+          const user = JSON.parse(userData)
+          setCurrentUser(user)
 
-        // Load team members from API
-        const storedMembers = await getUserData<any[]>("teamMembers", [])
-        // Ensure teamMembers is always an array
-        const membersArray = Array.isArray(storedMembers) ? storedMembers : []
-        setTeamMembers(membersArray)
+          // Load team members from API instead of localStorage
+          const response = await fetch(`/api/team-members?userId=${user.id}`)
+          if (response.ok) {
+            const data = await response.json()
+            const membersArray = Array.isArray(data.members) ? data.members : []
+            setTeamMembers(membersArray)
+          } else {
+            console.error("[TeamManagement] Failed to load team members from API")
+            setTeamMembers([])
+          }
+        }
       } catch (error) {
         console.error("[TeamManagement] Error loading team members:", error)
         setTeamMembers([])
@@ -120,10 +126,17 @@ export function TeamManagement() {
       const data = await response.json()
       const newMember = data.member
 
-      // Reload team members
-      const storedMembers = await getUserData<any[]>("teamMembers", [])
-      const membersArray = Array.isArray(storedMembers) ? storedMembers : []
-      setTeamMembers(membersArray)
+      // Reload team members from API
+      const userData = sessionStorage.getItem("user")
+      if (userData) {
+        const user = JSON.parse(userData)
+        const reloadResponse = await fetch(`/api/team-members?userId=${user.id}`)
+        if (reloadResponse.ok) {
+          const reloadData = await reloadResponse.json()
+          const membersArray = Array.isArray(reloadData.members) ? reloadData.members : []
+          setTeamMembers(membersArray)
+        }
+      }
 
       if (formData.role !== "admin" && username) {
         setGeneratedCredentials({
@@ -162,10 +175,17 @@ export function TeamManagement() {
         throw new Error(data.error || "Failed to update role")
       }
 
-      // Reload team members
-      const storedMembers = await getUserData<any[]>("teamMembers", [])
-      const membersArray = Array.isArray(storedMembers) ? storedMembers : []
-      setTeamMembers(membersArray)
+      // Reload team members from API
+      const userData = sessionStorage.getItem("user")
+      if (userData) {
+        const user = JSON.parse(userData)
+        const reloadResponse = await fetch(`/api/team-members?userId=${user.id}`)
+        if (reloadResponse.ok) {
+          const reloadData = await reloadResponse.json()
+          const membersArray = Array.isArray(reloadData.members) ? reloadData.members : []
+          setTeamMembers(membersArray)
+        }
+      }
       toast.success("Role updated successfully!")
     } catch (error: any) {
       console.error("[TeamManagement] Error updating role:", error)
@@ -191,10 +211,17 @@ export function TeamManagement() {
         throw new Error(data.error || "Failed to delete member")
       }
 
-      // Reload team members
-      const storedMembers = await getUserData<any[]>("teamMembers", [])
-      const membersArray = Array.isArray(storedMembers) ? storedMembers : []
-      setTeamMembers(membersArray)
+      // Reload team members from API
+      const userData = sessionStorage.getItem("user")
+      if (userData) {
+        const user = JSON.parse(userData)
+        const reloadResponse = await fetch(`/api/team-members?userId=${user.id}`)
+        if (reloadResponse.ok) {
+          const reloadData = await reloadResponse.json()
+          const membersArray = Array.isArray(reloadData.members) ? reloadData.members : []
+          setTeamMembers(membersArray)
+        }
+      }
       toast.success("Member moved to trash")
     } catch (error: any) {
       console.error("[TeamManagement] Error deleting member:", error)
@@ -248,10 +275,17 @@ export function TeamManagement() {
         throw new Error(data.error || "Failed to update member")
       }
 
-      // Reload team members
-      const storedMembers = await getUserData<any[]>("teamMembers", [])
-      const membersArray = Array.isArray(storedMembers) ? storedMembers : []
-      setTeamMembers(membersArray)
+      // Reload team members from API
+      const userData = sessionStorage.getItem("user")
+      if (userData) {
+        const user = JSON.parse(userData)
+        const reloadResponse = await fetch(`/api/team-members?userId=${user.id}`)
+        if (reloadResponse.ok) {
+          const reloadData = await reloadResponse.json()
+          const membersArray = Array.isArray(reloadData.members) ? reloadData.members : []
+          setTeamMembers(membersArray)
+        }
+      }
       toast.success("Member updated successfully!")
       setIsEditDialogOpen(false)
       setEditingMember(null)

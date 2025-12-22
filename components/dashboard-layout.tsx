@@ -51,15 +51,20 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           const endDate = new Date(subscription.endDate)
           const today = new Date()
           const isExpired = endDate < today
-          const isPending = subscription.status === "PENDING" && subscription.paymentStatus === "PENDING"
+          const isFreeTrial = subscription.status === "FREE_TRIAL" || subscription.status === "free_trial" || subscription.isFreeTrial
+          const paymentStatus = subscription.paymentStatus || "PENDING"
+          const isPaymentApproved = paymentStatus === "APPROVED"
           
-          // If subscription is expired (and not free trial) or pending, redirect to subscription page
-          if (isExpired && subscription.status !== "FREE_TRIAL") {
+          // Block access if subscription is expired
+          if (isExpired) {
             router.push("/subscription")
-          } else if (isPending) {
+            return
+          }
+          
+          // Block access if payment is not approved (unless it's a free trial)
+          if (!isFreeTrial && !isPaymentApproved) {
             router.push("/subscription")
-          } else if (subscription.status === "FREE_TRIAL" && isExpired) {
-            router.push("/subscription")
+            return
           }
         } catch (error) {
           console.error("[DashboardLayout] Error checking subscription:", error)

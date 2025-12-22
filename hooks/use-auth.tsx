@@ -236,23 +236,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const now = new Date()
             const endDate = new Date(sub.endDate)
             const isExpired = endDate < now
-            const isPending = sub.status === "PENDING" && sub.paymentStatus === "PENDING"
-
-            if (isExpired && sub.status !== "FREE_TRIAL" && sub.status !== "free_trial") {
-              throw new Error("Your subscription has expired. Please renew your subscription to continue using the admin panel.")
+            const isFreeTrial = sub.status === "FREE_TRIAL" || sub.status === "free_trial" || sub.isFreeTrial
+            const paymentStatus = sub.paymentStatus || "PENDING"
+            const isPaymentApproved = paymentStatus === "APPROVED"
+            
+            // Block login if subscription is expired
+            if (isExpired) {
+              if (isFreeTrial) {
+                throw new Error("Your free trial has ended. Please subscribe to continue using the admin panel.")
+              } else {
+                throw new Error("Your subscription has expired. Please renew your subscription to continue using the admin panel.")
+              }
             }
 
-            if (isPending) {
-              // Allow login but show warning - don't block access
-              console.warn("[Login] Payment pending, but allowing login")
-            }
-
-            if ((sub.status === "FREE_TRIAL" || sub.status === "free_trial") && isExpired) {
-              throw new Error("Your free trial has ended. Please subscribe to continue using the admin panel.")
+            // Block login if payment is not approved (unless it's a free trial)
+            if (!isFreeTrial && !isPaymentApproved) {
+              throw new Error("Your payment is pending approval. Please wait for admin approval or contact support.")
             }
           } else {
-            // No subscription found - allow login but user will be redirected to subscription page
-            console.warn("[Login] No subscription found for user, but allowing login")
+            // No subscription found - block login and redirect to subscription
+            throw new Error("No active subscription found. Please subscribe to access the admin panel.")
           }
         }
       } catch (subError: any) {
