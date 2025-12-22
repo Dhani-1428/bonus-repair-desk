@@ -1,7 +1,7 @@
 import NextAuth, { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
-import { prisma } from "@/lib/prisma"
+import { queryOne } from "@/lib/mysql"
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -16,9 +16,10 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Email and password are required")
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-        })
+        const user = await queryOne(
+          `SELECT * FROM users WHERE email = ?`,
+          [credentials.email]
+        )
 
         if (!user) {
           throw new Error("Invalid email or password")

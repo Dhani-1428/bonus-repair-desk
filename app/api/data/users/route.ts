@@ -1,25 +1,19 @@
 import { NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { query } from "@/lib/mysql"
 
 export async function GET() {
   try {
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        createdAt: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    })
+    const users = await query(
+      `SELECT id, name, email, role, createdAt FROM users ORDER BY createdAt DESC`
+    )
 
-    // Map Prisma roles to app roles
-    const mappedUsers = users.map((user) => ({
-      ...user,
+    // Map database roles to app roles
+    const mappedUsers = users.map((user: any) => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
       role: user.role === "ADMIN" ? "admin" : user.role === "USER" ? "member" : "super_admin",
+      createdAt: user.createdAt,
     }))
 
     return NextResponse.json({ users: mappedUsers })
