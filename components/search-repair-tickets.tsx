@@ -53,16 +53,22 @@ export function SearchRepairTickets({ initialStatusFilter }: SearchRepairTickets
   useEffect(() => {
     const loadData = async () => {
       try {
-        // Load tickets from API
-        const storedTickets = await getUserData<any[]>("repairTickets", [])
-        // Ensure tickets is always an array
-        const ticketsArray = Array.isArray(storedTickets) ? storedTickets : []
-        setTickets(ticketsArray)
-        
         // Get user from sessionStorage
         const userData = sessionStorage.getItem("user")
         if (userData) {
-          setCurrentUser(JSON.parse(userData))
+          const user = JSON.parse(userData)
+          setCurrentUser(user)
+          
+          // Load tickets from API instead of localStorage
+          const response = await fetch(`/api/repairs?userId=${user.id}`)
+          if (response.ok) {
+            const data = await response.json()
+            const ticketsArray = Array.isArray(data.tickets) ? data.tickets : []
+            setTickets(ticketsArray)
+          } else {
+            console.error("[SearchRepairTickets] Failed to load tickets from API")
+            setTickets([])
+          }
         }
       } catch (error) {
         console.error("[SearchRepairTickets] Error loading tickets:", error)

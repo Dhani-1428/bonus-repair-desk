@@ -4,10 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useTranslation } from "@/components/language-provider"
-import { getUserData } from "@/lib/storage"
+import { useAuth } from "@/hooks/use-auth"
 
 export function StatsCards() {
   const router = useRouter()
+  const { user } = useAuth()
   const { t } = useTranslation()
   const [stats, setStats] = useState({
     total: 0,
@@ -19,17 +20,31 @@ export function StatsCards() {
 
   useEffect(() => {
     const updateStats = async () => {
+      if (!user?.id) return
+      
       try {
-        const tickets = await getUserData<any[]>("repairTickets", [])
-        // Ensure tickets is always an array
-        const ticketsArray = Array.isArray(tickets) ? tickets : []
-        setStats({
-          total: ticketsArray.length,
-          pending: ticketsArray.filter((t: any) => t.status === "pending").length,
-          inProgress: ticketsArray.filter((t: any) => t.status === "in_progress").length,
-          completed: ticketsArray.filter((t: any) => t.status === "completed").length,
-          delivered: ticketsArray.filter((t: any) => t.status === "delivered").length,
-        })
+        // Load tickets from API instead of localStorage
+        const response = await fetch(`/api/repairs?userId=${user.id}`)
+        if (response.ok) {
+          const data = await response.json()
+          const ticketsArray = Array.isArray(data.tickets) ? data.tickets : []
+          setStats({
+            total: ticketsArray.length,
+            pending: ticketsArray.filter((t: any) => t.status === "PENDING" || t.status === "pending").length,
+            inProgress: ticketsArray.filter((t: any) => t.status === "IN_PROGRESS" || t.status === "in_progress").length,
+            completed: ticketsArray.filter((t: any) => t.status === "COMPLETED" || t.status === "completed").length,
+            delivered: ticketsArray.filter((t: any) => t.status === "DELIVERED" || t.status === "delivered").length,
+          })
+        } else {
+          console.error("[StatsCards] Failed to load tickets from API")
+          setStats({
+            total: 0,
+            pending: 0,
+            inProgress: 0,
+            completed: 0,
+            delivered: 0,
+          })
+        }
       } catch (error) {
         console.error("[StatsCards] Error fetching tickets:", error)
         // Set default stats on error
@@ -45,7 +60,7 @@ export function StatsCards() {
     updateStats()
     const interval = setInterval(updateStats, 5000) // Update every 5 seconds instead of 1
     return () => clearInterval(interval)
-  }, [])
+  }, [user?.id])
 
   const handleCardClick = (status?: string) => {
     if (!status || status === "all") {

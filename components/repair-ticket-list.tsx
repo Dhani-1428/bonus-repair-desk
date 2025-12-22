@@ -5,27 +5,36 @@ import { Badge } from "@/components/ui/badge"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useTranslation } from "@/components/language-provider"
-import { getUserData } from "@/lib/storage"
+import { useAuth } from "@/hooks/use-auth"
 
 export function RepairTicketList() {
   const router = useRouter()
+  const { user } = useAuth()
   const [tickets, setTickets] = useState<any[]>([])
   const { t } = useTranslation()
 
   useEffect(() => {
     const loadTickets = async () => {
+      if (!user?.id) return
+      
       try {
-        const storedTickets = await getUserData<any[]>("repairTickets", [])
-        // Ensure tickets is always an array
-        const ticketsArray = Array.isArray(storedTickets) ? storedTickets : []
-        setTickets(ticketsArray.slice(0, 5))
+        // Load tickets from API instead of localStorage
+        const response = await fetch(`/api/repairs?userId=${user.id}`)
+        if (response.ok) {
+          const data = await response.json()
+          const ticketsArray = Array.isArray(data.tickets) ? data.tickets : []
+          setTickets(ticketsArray.slice(0, 5))
+        } else {
+          console.error("[RepairTicketList] Failed to load tickets from API")
+          setTickets([])
+        }
       } catch (error) {
         console.error("[RepairTicketList] Error fetching tickets:", error)
         setTickets([])
       }
     }
     loadTickets()
-  }, [])
+  }, [user?.id])
 
   const getStatusColor = (status: string) => {
     switch (status) {
