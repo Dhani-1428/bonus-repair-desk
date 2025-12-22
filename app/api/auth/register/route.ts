@@ -45,11 +45,22 @@ export async function POST(request: NextRequest) {
     )
 
     // Get created user
-    const user = await queryOne(
-      `SELECT id, name, email, role, shopName, contactNumber, tenantId, createdAt 
-       FROM users WHERE id = ?`,
-      [userId]
-    )
+    let user
+    try {
+      user = await queryOne(
+        `SELECT id, name, email, role, shopName, contactNumber, tenantId, createdAt 
+         FROM users WHERE id = ?`,
+        [userId]
+      )
+      
+      if (!user) {
+        console.error(`[API] ⚠️  User created but not found: ${userId}`)
+        throw new Error("User was created but could not be retrieved")
+      }
+    } catch (fetchError: any) {
+      console.error("[API] Error fetching created user:", fetchError?.message || fetchError)
+      throw new Error(`Failed to retrieve created user: ${fetchError?.message || "Unknown error"}`)
+    }
 
     // Create tenant-specific tables for this user
     try {
@@ -96,11 +107,18 @@ export async function POST(request: NextRequest) {
       endDate.setHours(23, 59, 59, 999)
     }
 
-    await execute(
-      `INSERT INTO subscriptions (id, userId, tenantId, plan, status, startDate, endDate, isFreeTrial)
-       VALUES (?, ?, ?, ?, 'FREE_TRIAL', ?, ?, TRUE)`,
-      [subscriptionId, userId, tenantId, selectedPlan || "MONTHLY", startDate, endDate]
-    )
+    try {
+      await execute(
+        `INSERT INTO subscriptions (id, userId, tenantId, plan, status, startDate, endDate, isFreeTrial)
+         VALUES (?, ?, ?, ?, 'FREE_TRIAL', ?, ?, TRUE)`,
+        [subscriptionId, userId, tenantId, selectedPlan || "MONTHLY", startDate, endDate]
+      )
+      console.log(`[API] ✅ Subscription created for user: ${email}`)
+    } catch (subError: any) {
+      console.error("[API] Error creating subscription:", subError?.message || subError)
+      // Don't fail registration if subscription creation fails - user is already created
+      console.warn("[API] ⚠️  User created but subscription creation failed. User can still login.")
+    }
 
     // Send admin notification about new signup (include password for admin reference)
     try {
@@ -114,10 +132,39 @@ export async function POST(request: NextRequest) {
       message: "User registered successfully",
       user,
     }, { status: 201 })
-  } catch (error) {
+  } catch (error: any) {
     console.error("[API] Register error:", error)
+    console.error("[API] Register error details:", {
+      message: error?.message || "Unknown error",
+      code: error?.code,
+      errno: error?.errno,
+      sqlState: error?.sqlState,
+      sqlMessage: error?.sqlMessage,
+      stack: error?.stack?.substring(0, 500),
+    })
+    
+    // Determine specific error message
+    let errorMessage = "Failed to create user"
+    if (error?.code === "ECONNREFUSED" || error?.code === "ETIMEDOUT") {
+      errorMessage = "Database connection failed. Please try again later."
+    } else if (error?.code === "ER_ACCESS_DENIED_ERROR") {
+      errorMessage = "Database authentication failed."
+    } else if (error?.code === "ER_BAD_DB_ERROR") {
+      errorMessage = `Database '${process.env.DB_NAME}' not found. Please check your database configuration.`
+    } else if (error?.code === "ER_NO_SUCH_TABLE") {
+      errorMessage = "Database table not found. Please run the database initialization script."
+    } else if (error?.code === "ER_DUP_ENTRY") {
+      errorMessage = "User with this email already exists."
+    } else if (error?.message) {
+      errorMessage = error.message
+    }
+    
     return NextResponse.json(
-      { error: "Failed to create user" },
+      { 
+        error: errorMessage,
+        details: process.env.NODE_ENV === "development" ? error?.message : undefined,
+        code: process.env.NODE_ENV === "development" ? error?.code : undefined
+      },
       { status: 500 }
     )
   }
