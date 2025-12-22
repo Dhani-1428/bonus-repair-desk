@@ -47,15 +47,41 @@ export async function GET(request: NextRequest) {
 
     // Ensure tenant tables exist
     if (!(await tenantTablesExist(userTenantId))) {
+      console.log(`[API] Creating tenant tables for tenantId: ${userTenantId}`)
       await createTenantTables(userTenantId)
+      console.log(`[API] ✅ Tenant tables created for tenantId: ${userTenantId}`)
     }
 
     const tables = getTenantTableNames(userTenantId)
     const tableName = escapeId(tables.repairTickets)
-    const tickets = await query(
-      `SELECT * FROM ${tableName} WHERE userId = ? ORDER BY createdAt DESC`,
-      [userId]
-    )
+    
+    console.log(`[API] Fetching repair tickets from table: ${tableName} for userId: ${userId}, tenantId: ${userTenantId}`)
+    console.log(`[API] Database: ${process.env.DB_NAME || "admin_panel_db"}`)
+    
+    let tickets
+    try {
+      tickets = await query(
+        `SELECT * FROM ${tableName} WHERE userId = ? ORDER BY createdAt DESC`,
+        [userId]
+      )
+      console.log(`[API] ✅ Found ${tickets.length} repair ticket(s) for user ${userId}`)
+    } catch (queryError: any) {
+      console.error(`[API] ❌ Error querying table ${tableName}:`, queryError?.message || queryError)
+      console.error(`[API] Error details:`, {
+        code: queryError?.code,
+        errno: queryError?.errno,
+        sqlState: queryError?.sqlState,
+        sqlMessage: queryError?.sqlMessage,
+      })
+      
+      // If table doesn't exist, return empty array instead of error
+      if (queryError?.code === "ER_NO_SUCH_TABLE" || queryError?.message?.includes("doesn't exist")) {
+        console.warn(`[API] ⚠️  Table ${tableName} does not exist. Returning empty array.`)
+        tickets = []
+      } else {
+        throw queryError
+      }
+    }
 
     // Parse JSON fields for all tickets
     const parsedTickets = tickets.map((ticket: any) => {
