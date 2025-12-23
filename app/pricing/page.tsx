@@ -17,8 +17,6 @@ export default function PricingPage() {
       id: "SIX_MONTH",
       name: "Professional",
       price: 100,
-      period: t("subscription.sixMonths"),
-      duration: t("subscription.sixMonths"),
       popular: true,
       features: [
         "Everything in Starter",
@@ -33,8 +31,6 @@ export default function PricingPage() {
       id: "TWELVE_MONTH",
       name: "Enterprise",
       price: 150,
-      period: t("subscription.twelveMonths"),
-      duration: t("subscription.twelveMonths"),
       popular: false,
       features: [
         "Everything in Professional",
