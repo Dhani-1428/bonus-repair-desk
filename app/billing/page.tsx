@@ -155,6 +155,16 @@ export default function BillingPage() {
       // Save payment request for admin approval via API
       try {
         console.log("[Billing] Creating payment request via API...")
+        console.log("[Billing] Request payload:", {
+          userId: user.id,
+          plan: selectedPlan,
+          planName: planDetails.name,
+          price: planDetails.price,
+          months: planDetails.months,
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString(),
+        })
+        
         const paymentResponse = await fetch("/api/payments", {
           method: "POST",
           headers: {
@@ -171,13 +181,20 @@ export default function BillingPage() {
           }),
         })
 
+        console.log("[Billing] Payment API response status:", paymentResponse.status, paymentResponse.statusText)
+
         if (!paymentResponse.ok) {
           let errorData: any = {}
           try {
-            errorData = await paymentResponse.json()
+            const responseText = await paymentResponse.text()
+            console.error("[Billing] ❌ API error response text:", responseText)
+            try {
+              errorData = JSON.parse(responseText)
+            } catch (parseError) {
+              errorData = { error: responseText || `HTTP ${paymentResponse.status}` }
+            }
           } catch (e) {
-            const errorText = await paymentResponse.text().catch(() => "Unknown error")
-            errorData = { error: errorText || `HTTP ${paymentResponse.status}` }
+            errorData = { error: `HTTP ${paymentResponse.status} ${paymentResponse.statusText}` }
           }
           
           console.error("[Billing] ❌ Failed to create payment request via API:", {
@@ -187,10 +204,15 @@ export default function BillingPage() {
           })
           
           // Show detailed error message
-          const errorMessage = errorData.error || errorData.details || `Failed to create payment request (${paymentResponse.status})`
-          const missingFields = errorData.missingFields ? ` Missing: ${errorData.missingFields.join(", ")}` : ""
+          let errorMessage = errorData.error || errorData.details || `Failed to create payment request (${paymentResponse.status})`
+          if (errorData.missingFields && errorData.missingFields.length > 0) {
+            errorMessage += `. Missing fields: ${errorData.missingFields.join(", ")}`
+          }
+          if (errorData.code) {
+            errorMessage += ` [Error Code: ${errorData.code}]`
+          }
           
-          throw new Error(errorMessage + missingFields)
+          throw new Error(errorMessage)
         }
 
         const paymentData = await paymentResponse.json()
@@ -201,19 +223,30 @@ export default function BillingPage() {
       } catch (apiError: any) {
         console.error("[Billing] ❌ Error creating payment request via API:", {
           message: apiError?.message,
+          name: apiError?.name,
           error: apiError,
           stack: apiError?.stack,
         })
         
-        // Show user-friendly error message
+        // Show user-friendly error message with all available details
         let errorMessage = "Failed to submit payment"
         if (apiError?.message) {
           errorMessage = apiError.message
         } else if (apiError?.error) {
           errorMessage = apiError.error
+        } else if (typeof apiError === "string") {
+          errorMessage = apiError
         }
         
-        toast.error(errorMessage)
+        // Add network error detection
+        if (apiError?.name === "TypeError" && apiError?.message?.includes("fetch")) {
+          errorMessage = "Network error: Could not connect to server. Please check your internet connection and try again."
+        }
+        
+        console.error("[Billing] Showing error to user:", errorMessage)
+        toast.error(errorMessage, {
+          duration: 5000, // Show for 5 seconds
+        })
         setLoading(false)
         return // Don't continue if API call fails
       }

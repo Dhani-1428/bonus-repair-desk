@@ -68,7 +68,26 @@ export async function GET(request: NextRequest) {
 // POST create payment request
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    console.log("[API] POST /api/payments called")
+    let body
+    try {
+      body = await request.json()
+      console.log("[API] Request body received:", {
+        userId: body.userId,
+        plan: body.plan,
+        planName: body.planName,
+        price: body.price,
+        months: body.months,
+        hasStartDate: !!body.startDate,
+        hasEndDate: !!body.endDate,
+      })
+    } catch (parseError: any) {
+      console.error("[API] ❌ Error parsing request body:", parseError?.message || parseError)
+      return NextResponse.json(
+        { error: "Invalid request body. Please check the data format." },
+        { status: 400 }
+      )
+    }
     const {
       userId,
       plan,
