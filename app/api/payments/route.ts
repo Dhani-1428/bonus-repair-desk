@@ -67,11 +67,15 @@ export async function GET(request: NextRequest) {
 
 // POST create payment request
 export async function POST(request: NextRequest) {
+  console.log("[API] ========================================")
+  console.log("[API] POST /api/payments called at:", new Date().toISOString())
+  console.log("[API] ========================================")
+  
   try {
-    console.log("[API] POST /api/payments called")
     let body
     try {
       body = await request.json()
+      console.log("[API] ✅ Request body parsed successfully")
       console.log("[API] Request body received:", {
         userId: body.userId,
         plan: body.plan,
@@ -80,11 +84,16 @@ export async function POST(request: NextRequest) {
         months: body.months,
         hasStartDate: !!body.startDate,
         hasEndDate: !!body.endDate,
+        startDate: body.startDate,
+        endDate: body.endDate,
       })
     } catch (parseError: any) {
       console.error("[API] ❌ Error parsing request body:", parseError?.message || parseError)
       return NextResponse.json(
-        { error: "Invalid request body. Please check the data format." },
+        { 
+          error: "Invalid request body. Please check the data format.",
+          details: parseError?.message,
+        },
         { status: 400 }
       )
     }
@@ -375,44 +384,60 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("[API] ✅ Payment request created successfully:", paymentId)
+    console.log("[API] ========================================")
     return NextResponse.json({ payment: formatted }, { status: 201 })
   } catch (error: any) {
-    console.error("[API] ❌ Error creating payment request:", error?.message || error)
-    console.error("[API] Error details:", {
-      code: error?.code,
-      errno: error?.errno,
-      sqlState: error?.sqlState,
-      sqlMessage: error?.sqlMessage,
-      stack: error?.stack?.substring(0, 500),
-    })
+    console.error("[API] ========================================")
+    console.error("[API] ❌ ERROR CREATING PAYMENT REQUEST")
+    console.error("[API] ========================================")
+    console.error("[API] Error message:", error?.message || "Unknown error")
+    console.error("[API] Error type:", error?.name || typeof error)
+    console.error("[API] Error code:", error?.code)
+    console.error("[API] Error errno:", error?.errno)
+    console.error("[API] SQL State:", error?.sqlState)
+    console.error("[API] SQL Message:", error?.sqlMessage)
+    console.error("[API] Full error object:", JSON.stringify(error, Object.getOwnPropertyNames(error), 2))
+    console.error("[API] Stack trace:", error?.stack?.substring(0, 1000))
+    console.error("[API] ========================================")
     
     // Determine specific error message
     let errorMessage = "Failed to create payment request"
     let errorDetails: any = {}
     
     if (error?.code === "ER_NO_SUCH_TABLE") {
-      errorMessage = "Database table 'payment_requests' does not exist. Please run the database initialization script."
+      errorMessage = "Database table 'payment_requests' does not exist. The table should have been created automatically."
       errorDetails.table = "payment_requests"
     } else if (error?.code === "ER_DUP_ENTRY") {
       errorMessage = "Payment request already exists with this ID. Please try again."
-    } else if (error?.code === "ECONNREFUSED" || error?.code === "ETIMEDOUT") {
+    } else if (error?.code === "ECONNREFUSED" || error?.code === "ETIMEDOUT" || error?.code === "ECONNRESET") {
       errorMessage = "Database connection failed. Please try again later."
     } else if (error?.code === "ER_ACCESS_DENIED_ERROR") {
       errorMessage = "Database authentication failed. Please check database credentials."
     } else if (error?.code === "ER_BAD_DB_ERROR") {
       errorMessage = `Database '${process.env.DB_NAME || "unknown"}' not found. Please check your database configuration.`
-    } else if (error?.message) {
+    } else if (error?.code === "ER_BAD_FIELD_ERROR") {
+      errorMessage = `Database table structure error: ${error?.sqlMessage || "Invalid column name"}`
+    } else if (error?.code === "ER_TRUNCATED_WRONG_VALUE_FOR_FIELD") {
+      errorMessage = `Invalid data format: ${error?.sqlMessage || "Check date/price format"}`
+    } else if (error?.message && error.message !== "Failed to create payment request") {
       errorMessage = error.message
     }
     
+    // Always include error code and details in response for debugging
+    const response = {
+      error: errorMessage,
+      details: error?.message || "Unknown error occurred",
+      code: error?.code,
+      sqlState: error?.sqlState,
+      sqlMessage: error?.sqlMessage,
+      ...errorDetails,
+    }
+    
+    console.error("[API] Returning error response:", response)
+    console.error("[API] ========================================")
+    
     return NextResponse.json(
-      { 
-        error: errorMessage,
-        details: process.env.NODE_ENV === "development" ? error?.message : undefined,
-        code: process.env.NODE_ENV === "development" ? error?.code : undefined,
-        sqlState: process.env.NODE_ENV === "development" ? error?.sqlState : undefined,
-        ...errorDetails,
-      },
+      response,
       { status: 500 }
     )
   }

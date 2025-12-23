@@ -257,9 +257,21 @@ export default function BillingPage() {
       setTimeout(() => {
         router.push("/billing/success")
       }, 500)
-    } catch (error) {
-      console.error("Payment error:", error)
-      toast.error("Failed to process payment. Please try again.")
+    } catch (error: any) {
+      console.error("[Billing] ❌ Outer catch - Payment error:", {
+        message: error?.message,
+        name: error?.name,
+        error: error,
+        stack: error?.stack,
+      })
+      
+      // Only show generic error if we don't have a specific one
+      if (!error?.message || error.message === "Failed to submit payment") {
+        toast.error("Failed to process payment. Please check the console for details and try again.")
+      } else {
+        // This shouldn't happen if inner catch is working, but just in case
+        toast.error(error.message || "Failed to process payment. Please try again.")
+      }
     } finally {
       setLoading(false)
     }
