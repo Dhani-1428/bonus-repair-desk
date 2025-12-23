@@ -861,8 +861,11 @@ export function printReceiptForTickets(tickets: any[]) {
   }
   
   const companyAddress = companyInfo.address || "Avenida Almirente Reis n 23a, Lisboa, 1150-008"
-  const companyPhone1 = companyInfo.phone1 || companyInfo.phone || contactNumber || "218870168"
-  const companyPhone2 = companyInfo.phone2 || "933039205"
+  // Use only the admin's contact number from signup, not super admin's number
+  // Priority: user's contactNumber > companyInfo.phone1 > companyInfo.phone > default
+  const companyPhone1 = contactNumber && contactNumber !== "N/A" ? contactNumber : (companyInfo.phone1 || companyInfo.phone || "218870168")
+  // Only show phone2 if explicitly set in companyInfo, don't use default super admin number
+  const companyPhone2 = companyInfo.phone2 || null
   const companyEmail = companyInfo.email || companyInfo.companyEmail || "geral.tudo4mobile@gmail.com"
   const companyWebsite = companyInfo.website || "www.Tudo4Mobile.Pt"
   const companyVAT = companyInfo.vatNumber || "515570664"
