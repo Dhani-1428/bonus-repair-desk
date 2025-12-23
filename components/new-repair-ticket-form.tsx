@@ -567,12 +567,11 @@ export function NewRepairTicketForm() {
                   </div>
 
                   <div className="space-y-3">
-                    <Label className="text-gray-200 text-base font-semibold">{t("form.laptopSerialNumber")} *</Label>
+                    <Label className="text-gray-200 text-base font-semibold">{t("form.laptopSerialNumber")}</Label>
                     <Input
                       placeholder={t("form.laptopSerialNumberPlaceholder")}
                       value={device.serialNo || ""}
                       onChange={(e) => updateDevice(deviceIndex, "serialNo", e.target.value)}
-                      required
                       className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 focus:border-blue-500 h-12 text-lg"
                     />
                     <p className="text-xs text-gray-500">{t("form.laptopSerialNumberHint")}</p>
