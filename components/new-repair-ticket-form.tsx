@@ -1030,22 +1030,20 @@ export function printReceiptForTickets(tickets: any[]) {
     `
   }
 
-  // Generate receipts with 2 copies side by side (CLIENT and ADMIN) - compact A4 portrait, single page
+  // Generate receipts with 2 copies stacked vertically (CLIENT on top, ADMIN below) - compact A4 portrait, single page
   const ticketsHTML = tickets.map(ticket => {
     const clientCopy = generateReceiptHTML(ticket, 'CLIENT')
     const adminCopy = generateReceiptHTML(ticket, 'ADMIN')
     
     return `
-      <div class="ticket-container" style="page-break-inside: avoid; page-break-after: avoid; break-inside: avoid; break-after: avoid; margin-bottom: 0; height: auto; max-height: calc(100vh - 20mm); overflow: hidden;">
-        <div style="display: table; width: 100%; border-collapse: separate; border-spacing: 5px; height: auto;">
-          <div style="display: table-row; height: auto;">
-            <div style="display: table-cell; width: 50%; vertical-align: top; padding-right: 8px; border-right: 2px dashed #ccc; page-break-inside: avoid;">
-              ${clientCopy}
-            </div>
-            <div style="display: table-cell; width: 50%; vertical-align: top; padding-left: 8px; page-break-inside: avoid;">
-              ${adminCopy}
-            </div>
-          </div>
+      <div class="ticket-container" style="page-break-inside: avoid; page-break-after: avoid; break-inside: avoid; break-after: avoid; margin-bottom: 10px; width: 100%;">
+        <!-- Client's Copy (Top) -->
+        <div style="width: 100%; margin-bottom: 15px; page-break-inside: avoid; border-bottom: 2px dashed #999; padding-bottom: 10px;">
+          ${clientCopy}
+        </div>
+        <!-- Admin's Copy (Bottom) -->
+        <div style="width: 100%; page-break-inside: avoid;">
+          ${adminCopy}
         </div>
       </div>
     `
