@@ -31,7 +31,7 @@ export default function BillingPage() {
   useEffect(() => {
     try {
       const planParam = searchParams.get("plan")
-      if (planParam && ["MONTHLY", "THREE_MONTH", "SIX_MONTH", "TWELVE_MONTH"].includes(planParam)) {
+      if (planParam && ["SIX_MONTH", "TWELVE_MONTH"].includes(planParam)) {
         setSelectedPlan(planParam as SubscriptionPlan)
       }
     } catch (err: any) {
@@ -318,8 +318,6 @@ export default function BillingPage() {
   }
 
   const plans = [
-    { id: "MONTHLY" as SubscriptionPlan, ...PLAN_PRICING.MONTHLY },
-    { id: "THREE_MONTH" as SubscriptionPlan, ...PLAN_PRICING.THREE_MONTH },
     { id: "SIX_MONTH" as SubscriptionPlan, ...PLAN_PRICING.SIX_MONTH },
     { id: "TWELVE_MONTH" as SubscriptionPlan, ...PLAN_PRICING.TWELVE_MONTH },
   ]

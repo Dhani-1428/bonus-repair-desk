@@ -5,25 +5,9 @@ import { SubscribeButton } from "./subscribe-button"
 
 const plans = [
   {
-    id: "THREE_MONTH",
-    name: "Starter",
-    price: 70,
-    period: "3 months",
-    duration: "3 months",
-    popular: false,
-    features: [
-      "Custom admin panel",
-      "Your shop/company name",
-      "Data backup & security",
-      "Email support",
-      "Mobile responsive",
-      "Basic analytics",
-    ],
-  },
-  {
     id: "SIX_MONTH",
     name: "Professional",
-    price: 130,
+    price: 100,
     period: "6 months",
     duration: "6 months",
     popular: true,
@@ -39,7 +23,7 @@ const plans = [
   {
     id: "TWELVE_MONTH",
     name: "Enterprise",
-    price: 210,
+    price: 150,
     period: "12 months",
     duration: "12 months",
     popular: false,
@@ -49,7 +33,7 @@ const plans = [
       "Custom branding",
       "Dedicated account manager",
       "Priority updates",
-      "Save €70",
+      "Save €50",
     ],
   },
 ]
@@ -112,7 +96,7 @@ export default function PricingPage() {
                 </CardContent>
                 <CardFooter className="pt-4">
                   <SubscribeButton
-                    plan={plan.id as "THREE_MONTH" | "SIX_MONTH" | "TWELVE_MONTH"}
+                    plan={plan.id as "SIX_MONTH" | "TWELVE_MONTH"}
                     variant={plan.popular ? "default" : "outline"}
                     className="w-full rounded-full"
                   />

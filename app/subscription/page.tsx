@@ -70,30 +70,16 @@ export default function SubscriptionPage() {
 
   const plans = [
     {
-      id: "MONTHLY" as SubscriptionPlan,
-      name: t("plan.monthly"),
-      price: 25,
-      period: "1 month",
-      popular: false,
-    },
-    {
-      id: "THREE_MONTH" as SubscriptionPlan,
-      name: t("plan.starter"),
-      price: 70,
-      period: "3 months",
-      popular: false,
-    },
-    {
       id: "SIX_MONTH" as SubscriptionPlan,
       name: t("plan.professional"),
-      price: 130,
+      price: 100,
       period: "6 months",
       popular: true,
     },
     {
       id: "TWELVE_MONTH" as SubscriptionPlan,
       name: t("plan.enterprise"),
-      price: 210,
+      price: 150,
       period: "12 months",
       popular: false,
     },

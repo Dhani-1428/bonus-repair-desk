@@ -29,21 +29,9 @@ export interface Subscription {
 }
 
 export const PLAN_PRICING = {
-  MONTHLY: {
-    name: "Monthly",
-    price: 25,
-    months: 1,
-    features: ["Repair Ticket Management", "Customer Database", "Payment Processing", "Analytics & Reports", "Email Support", "Team Management"],
-  },
-  THREE_MONTH: {
-    name: "3 Months",
-    price: 70,
-    months: 3,
-    features: ["Repair Ticket Management", "Customer Database", "Payment Processing", "Analytics & Reports", "Email Support", "Team Management"],
-  },
   SIX_MONTH: {
     name: "6 Months",
-    price: 130,
+    price: 100,
     months: 6,
     features: [
       "Everything in 3 Months",
@@ -56,7 +44,7 @@ export const PLAN_PRICING = {
   },
   TWELVE_MONTH: {
     name: "12 Months",
-    price: 210,
+    price: 150,
     months: 12,
     features: [
       "Everything in 6 Months",
