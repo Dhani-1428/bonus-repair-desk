@@ -154,7 +154,9 @@ export default function SubscriptionPage() {
                   </div>
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold text-blue-400 mb-2">{t("subscription.freePlan")}</h3>
+                  <h3 className="text-xl font-bold text-blue-400 mb-2">
+                    {t("subscription.freePlanDays").replace("{days}", getDaysUntilExpiration(subscription).toString())}
+                  </h3>
                   <p className="text-gray-300 mb-2">
                     {t("subscription.freeTrialMessage")} {getSubscriptionEndDate(subscription).toLocaleDateString()}.
                   </p>

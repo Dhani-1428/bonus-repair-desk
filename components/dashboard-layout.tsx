@@ -296,7 +296,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                       </svg>
                     </div>
-                    <span className="relative">Subscriptions</span>
+                    <span className="relative">{t("header.subscriptions")}</span>
                   </Button>
                 </Link>
                 <Link href="/super-admin/payments">
@@ -369,7 +369,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                         />
                       </svg>
                     </div>
-                    <span className="relative">Analytics</span>
+                    <span className="relative">{t("header.analytics")}</span>
                   </Button>
                 </Link>
                 <Link href="/subscription">
@@ -385,13 +385,13 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                         />
                       </svg>
                     </div>
-                    <span className="relative">Subscription</span>
+                    <span className="relative">{t("header.subscription")}</span>
                   </Button>
                 </Link>
                 <div className="pt-4 mt-4 border-t border-gray-800">
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 mb-2 flex items-center gap-2">
                     <span className="w-1 h-1 bg-blue-500 rounded-full animate-pulse"></span>
-                    Administration
+                    {t("header.administration")}
                   </p>
                 </div>
                 <Link href="/trash">
