@@ -753,25 +753,25 @@ export function NewRepairTicketForm() {
                     <Label className="text-gray-200">{t("form.serviceNames")} *</Label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-gray-800/50 rounded-md border border-gray-700 p-3">
                       {[
-                        "LCD",
-                        "Battery",
-                        "Charging Port",
-                        "Microphone",
-                        "Ear speaker",
-                        "Back cover",
-                        "Wifi/Bluetooth",
-                        "Network",
-                        "Software",
-                        "Shut off",
+                        { key: "LCD", translationKey: "service.lcd" },
+                        { key: "Battery", translationKey: "service.battery" },
+                        { key: "Charging Port", translationKey: "service.chargingPort" },
+                        { key: "Microphone", translationKey: "service.microphone" },
+                        { key: "Ear speaker", translationKey: "service.earSpeaker" },
+                        { key: "Back cover", translationKey: "service.backCover" },
+                        { key: "Wifi/Bluetooth", translationKey: "service.wifiBluetooth" },
+                        { key: "Network", translationKey: "service.network" },
+                        { key: "Software", translationKey: "service.software" },
+                        { key: "Shut off", translationKey: "service.shutOff" },
                       ].map((service) => (
-                        <label key={service} className="flex items-center gap-2 text-sm text-gray-200 hover:text-white cursor-pointer">
+                        <label key={service.key} className="flex items-center gap-2 text-sm text-gray-200 hover:text-white cursor-pointer">
                           <input
                             type="checkbox"
                             className="h-4 w-4 accent-blue-600"
-                            checked={device.selectedServices.includes(service)}
-                            onChange={() => toggleService(deviceIndex, service)}
+                            checked={device.selectedServices.includes(service.key)}
+                            onChange={() => toggleService(deviceIndex, service.key)}
                           />
-                          <span>{service}</span>
+                          <span>{t(service.translationKey)}</span>
                         </label>
                       ))}
                     </div>

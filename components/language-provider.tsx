@@ -67,6 +67,18 @@ const translations: Record<Language, Record<string, string>> = {
     "form.battery": "Battery",
     "form.waterDamaged": "Water Damaged",
 
+    // Service names
+    "service.lcd": "LCD",
+    "service.battery": "Battery",
+    "service.chargingPort": "Charging Port",
+    "service.microphone": "Microphone",
+    "service.earSpeaker": "Ear speaker",
+    "service.backCover": "Back cover",
+    "service.wifiBluetooth": "Wifi/Bluetooth",
+    "service.network": "Network",
+    "service.software": "Software",
+    "service.shutOff": "Shut off",
+
     // NewRepairTicketForm placeholders
     "placeholder.customerName": "John Doe",
     "placeholder.contactNumber": "+1 234 567 8900",
@@ -363,6 +375,18 @@ const translations: Record<Language, Record<string, string>> = {
     "form.charger": "Carregador",
     "form.battery": "Bateria",
     "form.waterDamaged": "Danificado por Água",
+
+    // Service names
+    "service.lcd": "LCD",
+    "service.battery": "Bateria",
+    "service.chargingPort": "Porta de Carregamento",
+    "service.microphone": "Microfone",
+    "service.earSpeaker": "Altifalante",
+    "service.backCover": "Tampa Traseira",
+    "service.wifiBluetooth": "Wifi/Bluetooth",
+    "service.network": "Rede",
+    "service.software": "Software",
+    "service.shutOff": "Desligar",
 
     // NewRepairTicketForm placeholders
     "placeholder.customerName": "João Silva",
