@@ -52,6 +52,12 @@ const translations: Record<Language, Record<string, string>> = {
     "form.condition": "Mobile Condition (On Arrival)",
     "form.createDeviceEntry": "Create Device Entry",
     "form.cancel": "Cancel",
+    "form.equipmentCheck": "Equipment Check",
+    "form.simCard": "SIM Card",
+    "form.memoryCard": "Memory Card",
+    "form.charger": "Charger",
+    "form.battery": "Battery",
+    "form.waterDamaged": "Water Damaged",
 
     // NewRepairTicketForm placeholders
     "placeholder.customerName": "John Doe",
@@ -226,6 +232,12 @@ const translations: Record<Language, Record<string, string>> = {
     "form.condition": "Condição do telemóvel (à chegada)",
     "form.createDeviceEntry": "Criar registo do dispositivo",
     "form.cancel": "Cancelar",
+    "form.equipmentCheck": "Verificação de Equipamento",
+    "form.simCard": "Cartão SIM",
+    "form.memoryCard": "Cartão de Memória",
+    "form.charger": "Carregador",
+    "form.battery": "Bateria",
+    "form.waterDamaged": "Danificado por Água",
 
     // NewRepairTicketForm placeholders
     "placeholder.customerName": "João Silva",

@@ -27,7 +27,6 @@ interface DeviceFormData {
   charger: boolean
   battery: boolean
   waterDamaged: boolean
-  loanEquipment: boolean
   equipmentObs: string
   repairObs: string
   selectedServices: string[]
@@ -60,19 +59,6 @@ const BRANDS_AND_MODELS: Record<string, string[]> = {
 
 const ALL_BRANDS = Object.keys(BRANDS_AND_MODELS)
 
-// Mobile Conditions on Arrival
-const MOBILE_CONDITIONS = [
-  "Excellent - Like new",
-  "Good - Minor scratches",
-  "Fair - Visible wear",
-  "Poor - Significant damage",
-  "Screen cracked",
-  "Back panel damaged",
-  "Water damage visible",
-  "Button not working",
-  "Charging port damaged",
-  "Other",
-]
 
 // Generate Client ID
 const generateClientId = (): string => {
@@ -100,7 +86,6 @@ export function NewRepairTicketForm() {
       charger: false,
       battery: false,
       waterDamaged: false,
-      loanEquipment: false,
       equipmentObs: "",
       repairObs: "",
       selectedServices: [],
@@ -112,8 +97,6 @@ export function NewRepairTicketForm() {
     },
   ])
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [showConditionDialog, setShowConditionDialog] = useState<number | null>(null)
-  const [showCustomConditionDialog, setShowCustomConditionDialog] = useState<number | null>(null)
 
   // Generate preview Repair Number
   const getRepairNumberPreview = (): string => {
@@ -145,15 +128,17 @@ export function NewRepairTicketForm() {
         imeiNo: "",
         serialNo: "",
         warrantyUntil30Days: false,
-        battery: false,
-        charger: false,
         simCard: false,
         memoryCard: false,
+        charger: false,
+        battery: false,
+        waterDamaged: false,
         loanEquipment: false,
         equipmentObs: "",
         repairObs: "",
         selectedServices: [],
         condition: "",
+        customCondition: "",
         problem: "",
         price: "",
         imeiError: null,
@@ -265,13 +250,11 @@ export function NewRepairTicketForm() {
             charger: device.charger,
             battery: device.battery,
             waterDamaged: device.waterDamaged,
-            loanEquipment: device.loanEquipment,
+            loanEquipment: false,
             equipmentObs: device.equipmentObs || null,
             repairObs: device.repairObs || null,
             selectedServices: device.selectedServices,
-            condition: device.condition === "Other" && device.customCondition 
-              ? `Other: ${device.customCondition}` 
-              : device.condition || null,
+            condition: null,
             problem: device.problem,
             price: parseFloat(device.price),
             status: "PENDING",
@@ -327,7 +310,7 @@ export function NewRepairTicketForm() {
             charger: ticket.charger ?? false,
             battery: ticket.battery ?? false,
             waterDamaged: ticket.waterDamaged ?? false,
-            loanEquipment: ticket.loanEquipment ?? false,
+            loanEquipment: false,
             equipmentObs: ticket.equipmentObs || null,
             repairObs: ticket.repairObs || null,
             selectedServices: Array.isArray(ticket.selectedServices) ? ticket.selectedServices : (device.selectedServices || []),
@@ -411,7 +394,7 @@ export function NewRepairTicketForm() {
       <CardContent className="p-6 text-white">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Customer Information - Larger, more clickable */}
-          <div className="grid gap-6 md:grid-cols-3 border-b border-gray-800 pb-6">
+          <div className="grid gap-6 grid-cols-2 border-b border-gray-800 pb-6">
             <div className="space-y-3">
               <Label htmlFor="clientId" className="text-gray-200 text-base font-semibold">Client ID (Auto-generated)</Label>
               <Input
@@ -424,20 +407,20 @@ export function NewRepairTicketForm() {
                 Client ID is automatically generated
               </p>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="customerName" className="text-gray-200">{t("form.customerName")} *</Label>
+            <div className="space-y-3">
+              <Label htmlFor="customerName" className="text-gray-200 text-base font-semibold">{t("form.customerName")} *</Label>
               <Input
                 id="customerName"
                 placeholder={t("placeholder.customerName")}
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 required
-                className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 focus:border-blue-500"
+                className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 focus:border-blue-500 h-12 text-lg"
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="contact" className="text-gray-200">Client Phone *</Label>
+            <div className="space-y-3 col-span-2">
+              <Label htmlFor="contact" className="text-gray-200 text-base font-semibold">Client Phone *</Label>
               <Input
                 id="contact"
                 type="tel"
@@ -445,7 +428,7 @@ export function NewRepairTicketForm() {
                 value={contact}
                 onChange={(e) => setContact(e.target.value)}
                 required
-                className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 focus:border-blue-500"
+                className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 focus:border-blue-500 h-12 text-lg"
               />
             </div>
           </div>
@@ -611,7 +594,7 @@ export function NewRepairTicketForm() {
 
                   {/* Equipment Check - Large clickable buttons for easy use */}
                   <div className="space-y-2 md:col-span-2">
-                    <Label className="text-gray-200 text-lg font-semibold mb-3 block">Equipment Check</Label>
+                    <Label className="text-gray-200 text-lg font-semibold mb-3 block">{t("form.equipmentCheck")}</Label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {/* 1. SIM Card */}
                       <label className="flex items-center gap-3 p-4 bg-gray-800/50 rounded-lg border-2 border-gray-700 hover:border-blue-500 hover:bg-gray-800 cursor-pointer transition-all">
@@ -622,10 +605,13 @@ export function NewRepairTicketForm() {
                           onChange={(e) => updateDevice(deviceIndex, "simCard", e.target.checked)}
                         />
                         <div className="flex items-center gap-2">
-                          <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                          <svg className="w-6 h-6 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-1 14H5V7h14v11z"/>
+                            <rect x="7" y="9" width="10" height="6" rx="1" fill="white"/>
+                            <circle cx="9.5" cy="12" r="0.5" fill="currentColor"/>
+                            <circle cx="14.5" cy="12" r="0.5" fill="currentColor"/>
                           </svg>
-                          <span className="text-base font-medium text-white">SIM Card</span>
+                          <span className="text-base font-medium text-white">{t("form.simCard")}</span>
                         </div>
                       </label>
                       
@@ -638,10 +624,12 @@ export function NewRepairTicketForm() {
                           onChange={(e) => updateDevice(deviceIndex, "memoryCard", e.target.checked)}
                         />
                         <div className="flex items-center gap-2">
-                          <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+                          <svg className="w-6 h-6 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 18H6V4h12v16z"/>
+                            <path d="M8 6h8v2H8V6zm0 4h8v2H8v-2zm0 4h5v2H8v-2z" fill="white"/>
+                            <path d="M16 8h2v8h-2V8z" fill="white"/>
                           </svg>
-                          <span className="text-base font-medium text-white">Memory Card</span>
+                          <span className="text-base font-medium text-white">{t("form.memoryCard")}</span>
                         </div>
                       </label>
                       
@@ -654,10 +642,11 @@ export function NewRepairTicketForm() {
                           onChange={(e) => updateDevice(deviceIndex, "charger", e.target.checked)}
                         />
                         <div className="flex items-center gap-2">
-                          <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                          <svg className="w-6 h-6 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M11 21h-1l1-7H7.5c-.58 0-.57-.32-.38-.66.19-.34.05-.08.07-.12C6.44 13 10 11 10 11V7.5c0-.28.22-.5.5-.5s.5.22.5.5V11h2V7.5c0-.28.22-.5.5-.5s.5.22.5.5V11h2V7.5c0-.28.22-.5.5-.5s.5.22.5.5V11c0 3-1.5 5-5 5h-1l1 7z"/>
+                            <rect x="10" y="2" width="4" height="6" rx="1"/>
                           </svg>
-                          <span className="text-base font-medium text-white">Charger</span>
+                          <span className="text-base font-medium text-white">{t("form.charger")}</span>
                         </div>
                       </label>
                       
@@ -673,7 +662,7 @@ export function NewRepairTicketForm() {
                           <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                           </svg>
-                          <span className="text-base font-medium text-white">Battery</span>
+                          <span className="text-base font-medium text-white">{t("form.battery")}</span>
                         </div>
                       </label>
                       
@@ -686,26 +675,12 @@ export function NewRepairTicketForm() {
                           onChange={(e) => updateDevice(deviceIndex, "waterDamaged", e.target.checked)}
                         />
                         <div className="flex items-center gap-2">
-                          <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+                          <svg className="w-6 h-6 text-red-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19.36 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.64-4.96z"/>
+                            <path d="M7 16l1 2h2l-1-2M11 16l1 2h2l-1-2M15 16l1 2h2l-1-2" stroke="white" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+                            <path d="M7 19l1 2h2l-1-2M11 19l1 2h2l-1-2M15 19l1 2h2l-1-2" stroke="white" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
                           </svg>
-                          <span className="text-base font-medium text-white">Water Damaged</span>
-                        </div>
-                      </label>
-                      
-                      {/* Loan Equipment */}
-                      <label className="flex items-center gap-3 p-4 bg-gray-800/50 rounded-lg border-2 border-gray-700 hover:border-blue-500 hover:bg-gray-800 cursor-pointer transition-all">
-                        <input
-                          type="checkbox"
-                          className="h-6 w-6 accent-blue-600 cursor-pointer"
-                          checked={device.loanEquipment}
-                          onChange={(e) => updateDevice(deviceIndex, "loanEquipment", e.target.checked)}
-                        />
-                        <div className="flex items-center gap-2">
-                          <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                          </svg>
-                          <span className="text-base font-medium text-white">Loan Equipment</span>
+                          <span className="text-base font-medium text-white">{t("form.waterDamaged")}</span>
                         </div>
                       </label>
                     </div>
@@ -785,101 +760,6 @@ export function NewRepairTicketForm() {
                       required
                       className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 focus:border-blue-500"
                     />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-gray-200">Mobile Conditions on Arrival</Label>
-                    <Dialog open={showConditionDialog === deviceIndex} onOpenChange={(open) => setShowConditionDialog(open ? deviceIndex : null)}>
-                      <DialogTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="w-full bg-gray-800/50 border-gray-700 text-white hover:bg-gray-800"
-                        >
-                          {device.condition === "Other" && device.customCondition 
-                            ? `Other: ${device.customCondition.substring(0, 30)}${device.customCondition.length > 30 ? "..." : ""}`
-                            : device.condition || "Select condition"}
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-md">
-                        <DialogHeader>
-                          <DialogTitle>Select Mobile Condition on Arrival</DialogTitle>
-                          <DialogDescription className="text-gray-400">
-                            Choose the condition of the device when it arrived
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                          {MOBILE_CONDITIONS.map((condition) => (
-                            <button
-                              key={condition}
-                              type="button"
-                              onClick={() => {
-                                if (condition === "Other") {
-                                  setShowConditionDialog(null)
-                                  setShowCustomConditionDialog(deviceIndex)
-                                } else {
-                                  updateDevice(deviceIndex, "condition", condition)
-                                  updateDevice(deviceIndex, "customCondition", "")
-                                  setShowConditionDialog(null)
-                                }
-                              }}
-                              className="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-800 rounded-md transition-colors"
-                            >
-                              {condition}
-                            </button>
-                          ))}
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                    
-                    {/* Custom Condition Dialog */}
-                    <Dialog open={showCustomConditionDialog === deviceIndex} onOpenChange={(open) => setShowCustomConditionDialog(open ? deviceIndex : null)}>
-                      <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-md">
-                        <DialogHeader>
-                          <DialogTitle>Specify Custom Condition</DialogTitle>
-                          <DialogDescription className="text-gray-400">
-                            Please describe the condition of the device when it arrived
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="space-y-4 py-4">
-                          <Textarea
-                            placeholder="Enter custom condition description"
-                            value={device.customCondition}
-                            onChange={(e) => updateDevice(deviceIndex, "customCondition", e.target.value)}
-                            rows={4}
-                            className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 focus:border-blue-500"
-                          />
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={() => {
-                                setShowCustomConditionDialog(null)
-                                if (!device.customCondition.trim()) {
-                                  updateDevice(deviceIndex, "condition", "")
-                                }
-                              }}
-                              className="border-gray-700 bg-gray-900/50 text-white hover:bg-gray-800"
-                            >
-                              Cancel
-                            </Button>
-                            <Button
-                              type="button"
-                              onClick={() => {
-                                if (device.customCondition.trim()) {
-                                  updateDevice(deviceIndex, "condition", "Other")
-                                  setShowCustomConditionDialog(null)
-                                }
-                              }}
-                              className="bg-blue-600 hover:bg-blue-700 text-white"
-                              disabled={!device.customCondition.trim()}
-                            >
-                              Save
-                            </Button>
-                          </div>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
@@ -1071,10 +951,6 @@ export function printReceiptForTickets(tickets: any[]) {
           <div style="display: table; width: 100%; margin: 1px 0;">
             <div style="display: table-cell; width: 30%; font-weight: bold; font-size: 7pt;">Water Damaged:</div>
             <div style="display: table-cell; width: 70%; font-size: 7pt;">${ticket.waterDamaged ? "Yes" : "No"}</div>
-          </div>
-          <div style="display: table; width: 100%; margin: 1px 0;">
-            <div style="display: table-cell; width: 30%; font-weight: bold; font-size: 7pt;">Loan Equipment:</div>
-            <div style="display: table-cell; width: 70%; font-size: 7pt;">${ticket.loanEquipment ? "Yes" : "No"}</div>
           </div>
         </div>
         
