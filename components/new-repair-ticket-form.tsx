@@ -404,7 +404,7 @@ export function NewRepairTicketForm() {
                 className="bg-blue-900/20 border-blue-700/50 text-blue-300 font-mono font-semibold cursor-not-allowed h-12 text-lg"
               />
               <p className="text-xs text-gray-500">
-                Client ID is automatically generated
+                {t("form.clientIdHint")}
               </p>
             </div>
             <div className="space-y-3">
@@ -419,11 +419,11 @@ export function NewRepairTicketForm() {
               />
             </div>
             <div className="space-y-3">
-              <Label htmlFor="contact" className="text-gray-200 text-base font-semibold">Client Phone *</Label>
+              <Label htmlFor="contact" className="text-gray-200 text-base font-semibold">{t("form.clientPhone")} *</Label>
               <Input
                 id="contact"
                 type="tel"
-                placeholder="Enter Client Phone Number"
+                placeholder={t("form.clientPhonePlaceholder")}
                 value={contact}
                 onChange={(e) => setContact(e.target.value)}
                 required
@@ -459,10 +459,10 @@ export function NewRepairTicketForm() {
 
                 <div className="grid gap-6 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label className="text-gray-200">Brand *</Label>
+                    <Label className="text-gray-200">{t("form.brand")} *</Label>
                     <div className="relative">
                       <Input
-                        placeholder="Type or select brand"
+                        placeholder={t("form.brandPlaceholder")}
                         value={device.brand}
                         onChange={(e) => {
                           updateDevice(deviceIndex, "brand", e.target.value)
@@ -512,7 +512,7 @@ export function NewRepairTicketForm() {
                     <Label className="text-gray-200">{t("form.model")} *</Label>
                     <div className="relative">
                       <Input
-                        placeholder={device.brand ? "Type or select model" : "Select brand first"}
+                        placeholder={device.brand ? t("form.modelPlaceholder") : t("form.selectBrandFirst")}
                         value={device.model}
                         onChange={(e) => updateDevice(deviceIndex, "model", e.target.value)}
                         required
@@ -718,9 +718,9 @@ export function NewRepairTicketForm() {
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
-                    <Label className="text-gray-200">Equipment Observations</Label>
+                    <Label className="text-gray-200">{t("form.equipmentObservations")}</Label>
                     <Textarea
-                      placeholder="Equipment Observations"
+                      placeholder={t("form.equipmentObservationsPlaceholder")}
                       value={device.equipmentObs}
                       onChange={(e) => updateDevice(deviceIndex, "equipmentObs", e.target.value)}
                       rows={2}
@@ -816,7 +816,7 @@ export function NewRepairTicketForm() {
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              Add Another Device
+              {t("form.addAnotherDevice")}
             </Button>
 
             <div className="flex gap-4">
@@ -841,7 +841,10 @@ export function NewRepairTicketForm() {
                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    Create {devices.length} Device{devices.length > 1 ? "s" : ""} Entry
+                    {devices.length > 1 
+                      ? t("form.createDeviceEntries").replace("{count}", devices.length.toString())
+                      : t("form.createDeviceEntry").replace("{count}", devices.length.toString())
+                    }
                   </>
                 )}
               </Button>
