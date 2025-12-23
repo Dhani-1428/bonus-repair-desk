@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Navbar } from "@/components/navbar"
 import { Check, Sparkles } from "lucide-react"
 import { SubscribeButton } from "./subscribe-button"
+import { useTranslation } from "@/components/language-provider"
 
 export default function PricingPage() {
   const { t } = useTranslation()

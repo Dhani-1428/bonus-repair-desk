@@ -5,6 +5,7 @@ import { Check, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
+import { useTranslation } from "@/components/language-provider"
 import type { SubscriptionPlan } from "@/lib/constants"
 
 const pricingPlans = [

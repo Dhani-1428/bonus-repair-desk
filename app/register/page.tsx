@@ -13,6 +13,7 @@ import { AlertCircle, CheckCircle, Loader2, Sparkles } from "lucide-react"
 import { PLAN_PRICING, type SubscriptionPlan } from "@/lib/constants"
 
 export default function RegisterPage() {
+  const { t } = useTranslation()
   const router = useRouter()
   const { register } = useAuth()
   const [formData, setFormData] = useState({

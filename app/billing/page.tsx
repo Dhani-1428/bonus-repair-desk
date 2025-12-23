@@ -401,7 +401,7 @@ export default function BillingPage() {
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-400">Duration:</span>
-                        <span className="text-white">{PLAN_PRICING[selectedPlan].months} month{PLAN_PRICING[selectedPlan].months > 1 ? "s" : ""}</span>
+                        <span className="text-white">{PLAN_PRICING[selectedPlan].months === 6 ? t("subscription.sixMonths") : PLAN_PRICING[selectedPlan].months === 12 ? t("subscription.twelveMonths") : `${PLAN_PRICING[selectedPlan].months} ${t("subscription.months")}`}</span>
                       </div>
                       <div className="border-t border-gray-700 pt-2 mt-2">
                         <div className="flex justify-between">
