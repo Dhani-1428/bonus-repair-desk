@@ -71,28 +71,28 @@ export default function SubscriptionPage() {
   const plans = [
     {
       id: "MONTHLY" as SubscriptionPlan,
-      name: "Monthly",
+      name: t("plan.monthly"),
       price: 25,
       period: "1 month",
       popular: false,
     },
     {
       id: "THREE_MONTH" as SubscriptionPlan,
-      name: "Starter",
+      name: t("plan.starter"),
       price: 70,
       period: "3 months",
       popular: false,
     },
     {
       id: "SIX_MONTH" as SubscriptionPlan,
-      name: "Professional",
+      name: t("plan.professional"),
       price: 130,
       period: "6 months",
       popular: true,
     },
     {
       id: "TWELVE_MONTH" as SubscriptionPlan,
-      name: "Enterprise",
+      name: t("plan.enterprise"),
       price: 210,
       period: "12 months",
       popular: false,
@@ -105,27 +105,27 @@ export default function SubscriptionPage() {
   }
 
   const getSubscriptionStatus = () => {
-    if (!subscription) return { status: "none", message: "No active subscription", color: "gray" }
+    if (!subscription) return { status: "none", message: t("subscription.noActive"), color: "gray" }
     if (subscription.status === "free_trial" || subscription.isFreeTrial || subscription.status === "FREE_TRIAL") {
       const days = getDaysUntilExpiration(subscription)
-      return { status: "free_trial", message: `Free Plan - ${days} days left`, color: "blue" }
+      return { status: "free_trial", message: t("subscription.freePlanDaysLeft").replace("{days}", days.toString()), color: "blue" }
     }
     if (subscription.status === "pending" || subscription.status === "PENDING") {
-      return { status: "pending", message: "Payment Pending Approval", color: "yellow" }
+      return { status: "pending", message: t("subscription.paymentPending"), color: "yellow" }
     }
     // Check if subscription hasn't started yet
     if (isNotStarted(subscription)) {
-      return { status: "not_started", message: "Not started yet", color: "gray" }
+      return { status: "not_started", message: t("subscription.notStarted"), color: "gray" }
     }
     // Check if expired (only if end date has passed)
     if (isExpired(subscription)) {
-      return { status: "expired", message: "Subscription expired", color: "red" }
+      return { status: "expired", message: t("subscription.expiredStatus"), color: "red" }
     }
     if (isExpiringSoon(subscription, 7)) {
       const days = getDaysUntilExpiration(subscription)
-      return { status: "expiring", message: `Expires in ${days} days`, color: "yellow" }
+      return { status: "expiring", message: t("subscription.expiresIn").replace("{days}", days.toString()), color: "yellow" }
     }
-    return { status: "active", message: "Active", color: "green" }
+    return { status: "active", message: t("subscription.active"), color: "green" }
   }
 
   const statusInfo = getSubscriptionStatus()
@@ -136,10 +136,10 @@ export default function SubscriptionPage() {
       <div className="space-y-6 text-white">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-balance text-white">
-            Subscription Management
+            {t("subscription.title")}
           </h1>
           <p className="text-gray-300 text-balance">
-            Manage your subscription, renew, or upgrade your plan
+            {t("subscription.subtitle")}
           </p>
         </div>
 
@@ -154,12 +154,12 @@ export default function SubscriptionPage() {
                   </div>
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold text-blue-400 mb-2">Free Plan - 15 Days</h3>
+                  <h3 className="text-xl font-bold text-blue-400 mb-2">{t("subscription.freePlan")}</h3>
                   <p className="text-gray-300 mb-2">
-                    You're currently on a <strong>15-day FREE trial</strong>. Your trial will end on {getSubscriptionEndDate(subscription).toLocaleDateString()}.
+                    {t("subscription.freeTrialMessage")} {getSubscriptionEndDate(subscription).toLocaleDateString()}.
                   </p>
                   <p className="text-sm text-gray-400">
-                    After the trial ends, you'll need to subscribe to continue accessing your admin panel. All your data will be safe.
+                    {t("subscription.afterTrial")}
                   </p>
                 </div>
               </div>
@@ -178,12 +178,12 @@ export default function SubscriptionPage() {
                   </div>
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold text-yellow-400 mb-2">Payment Pending Approval</h3>
+                  <h3 className="text-xl font-bold text-yellow-400 mb-2">{t("subscription.paymentPending")}</h3>
                   <p className="text-gray-300 mb-2">
-                    Your payment has been submitted and is pending admin approval.
+                    {t("subscription.paymentPendingMessage")}
                   </p>
                   <p className="text-sm text-blue-300">
-                    Your admin panel will be activated within <strong>15 minutes</strong> after admin approval. You'll receive a confirmation email once activated.
+                    {t("subscription.paymentPendingInfo")}
                   </p>
                 </div>
               </div>
@@ -202,12 +202,12 @@ export default function SubscriptionPage() {
                   </div>
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold text-gray-400 mb-2">Subscription Not Started Yet</h3>
+                  <h3 className="text-xl font-bold text-gray-400 mb-2">{t("subscription.notStarted")}</h3>
                   <p className="text-gray-300 mb-2">
-                    Your subscription will start on <strong>{new Date(subscription.startDate).toLocaleDateString()}</strong>.
+                    {t("subscription.notStartedMessage")} <strong>{new Date(subscription.startDate).toLocaleDateString()}</strong>.
                   </p>
                   <p className="text-sm text-gray-400">
-                    Your subscription is scheduled to begin after your free trial period ends.
+                    {t("subscription.notStartedInfo")}
                   </p>
                 </div>
               </div>
@@ -226,12 +226,12 @@ export default function SubscriptionPage() {
                   </div>
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold text-red-400 mb-2">Subscription Expired</h3>
+                  <h3 className="text-xl font-bold text-red-400 mb-2">{t("subscription.expired")}</h3>
                   <p className="text-gray-300 mb-4">
-                    Your subscription has expired. To continue accessing the admin panel, please renew your subscription by selecting a plan below.
+                    {t("subscription.expiredMessage")}
                   </p>
                   <p className="text-sm text-gray-400">
-                    Your data is safe and will be available once you renew your subscription.
+                    {t("subscription.expiredInfo")}
                   </p>
                 </div>
               </div>
@@ -245,9 +245,15 @@ export default function SubscriptionPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-xl text-white">Current Subscription</CardTitle>
+                  <CardTitle className="text-xl text-white">{t("subscription.current")}</CardTitle>
                   <CardDescription className="text-gray-400">
-                    {PLAN_PRICING[subscription.plan]?.name || subscription.plan}
+                    {(() => {
+                      const planKey = subscription.plan === "MONTHLY" ? "monthly" :
+                                    subscription.plan === "THREE_MONTH" ? "starter" :
+                                    subscription.plan === "SIX_MONTH" ? "professional" :
+                                    subscription.plan === "TWELVE_MONTH" ? "enterprise" : "";
+                      return planKey ? t(`plan.${planKey}`) : (PLAN_PRICING[subscription.plan]?.name || subscription.plan);
+                    })()}
                   </CardDescription>
                 </div>
                 <Badge 
@@ -267,25 +273,33 @@ export default function SubscriptionPage() {
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-1">
-                  <p className="text-xs text-gray-400">Start Date</p>
+                  <p className="text-xs text-gray-400">{t("subscription.startDate")}</p>
                   <p className="text-sm text-white flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
                     {new Date(subscription.startDate).toLocaleDateString()}
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs text-gray-400">End Date</p>
+                  <p className="text-xs text-gray-400">{t("subscription.endDate")}</p>
                   <p className="text-sm text-white flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
                     {getSubscriptionEndDate(subscription).toLocaleDateString()}
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs text-gray-400">Plan</p>
-                  <p className="text-sm text-white">{PLAN_PRICING[subscription.plan]?.name || subscription.plan}</p>
+                  <p className="text-xs text-gray-400">{t("subscription.plan")}</p>
+                  <p className="text-sm text-white">
+                    {(() => {
+                      const planKey = subscription.plan === "MONTHLY" ? "monthly" :
+                                    subscription.plan === "THREE_MONTH" ? "starter" :
+                                    subscription.plan === "SIX_MONTH" ? "professional" :
+                                    subscription.plan === "TWELVE_MONTH" ? "enterprise" : "";
+                      return planKey ? t(`plan.${planKey}`) : (PLAN_PRICING[subscription.plan]?.name || subscription.plan);
+                    })()}
+                  </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs text-gray-400">Price</p>
+                  <p className="text-xs text-gray-400">{t("subscription.price")}</p>
                   <p className="text-sm text-white font-semibold">€{PLAN_PRICING[subscription.plan]?.price || 0}</p>
                 </div>
               </div>
@@ -296,11 +310,10 @@ export default function SubscriptionPage() {
                     <AlertCircle className="w-5 h-5 text-yellow-400 mt-0.5" />
                     <div className="flex-1">
                       <p className="text-sm font-semibold text-yellow-400 mb-1">
-                        Subscription Expiring Soon
+                        {t("subscription.expiringSoon")}
                       </p>
                       <p className="text-xs text-gray-300">
-                        Your subscription will expire in {daysUntilExpiration} days. 
-                        You will receive an email reminder 7 days before expiration.
+                        {t("subscription.expiringSoonMessage").replace("{days}", daysUntilExpiration.toString())}
                       </p>
                     </div>
                   </div>
@@ -313,10 +326,10 @@ export default function SubscriptionPage() {
                     <Clock className="w-5 h-5 text-gray-400 mt-0.5" />
                     <div className="flex-1">
                       <p className="text-sm font-semibold text-gray-400 mb-1">
-                        Subscription Not Started Yet
+                        {t("subscription.notStarted")}
                       </p>
                       <p className="text-xs text-gray-300">
-                        Your subscription will start on {new Date(subscription.startDate).toLocaleDateString()}.
+                        {t("subscription.notStartedMessage")} {new Date(subscription.startDate).toLocaleDateString()}.
                       </p>
                     </div>
                   </div>
@@ -329,10 +342,10 @@ export default function SubscriptionPage() {
                     <AlertCircle className="w-5 h-5 text-red-400 mt-0.5" />
                     <div className="flex-1">
                       <p className="text-sm font-semibold text-red-400 mb-1">
-                        Subscription Expired
+                        {t("subscription.expired")}
                       </p>
                       <p className="text-xs text-gray-300">
-                        Your subscription has expired. Please renew to continue using the service.
+                        {t("subscription.expiredMessage")}
                       </p>
                     </div>
                   </div>
@@ -345,7 +358,7 @@ export default function SubscriptionPage() {
                 disabled={loading}
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
               >
-                {loading ? "Processing..." : "Renew Same Plan"}
+                {loading ? t("subscription.processing") : t("subscription.renewSamePlan")}
               </Button>
             </CardFooter>
           </Card>
@@ -354,9 +367,9 @@ export default function SubscriptionPage() {
         {!subscription && (
           <Card className="shadow-2xl border border-gray-800/50 bg-gradient-to-br from-gray-900/95 via-black/95 to-gray-900/95 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="text-xl text-white">No Active Subscription</CardTitle>
+              <CardTitle className="text-xl text-white">{t("subscription.noActive")}</CardTitle>
               <CardDescription className="text-gray-400">
-                Subscribe to a plan to start using the service
+                {t("subscription.noActiveMessage")}
               </CardDescription>
             </CardHeader>
           </Card>
@@ -365,7 +378,7 @@ export default function SubscriptionPage() {
         {/* Available Plans */}
         <div>
           <h2 className="text-xl font-semibold mb-4 text-white">
-            {subscription ? "Upgrade or Change Plan" : "Choose Your Plan"}
+            {subscription ? t("subscription.upgradeOrChange") : t("subscription.choosePlan")}
           </h2>
           <div className="grid md:grid-cols-3 gap-6">
             {plans.map((plan) => (
@@ -380,13 +393,19 @@ export default function SubscriptionPage() {
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                     <div className="inline-flex items-center justify-center rounded-full bg-blue-600 px-4 py-1 text-xs font-medium text-white">
-                      Most Popular
+                      {t("subscription.mostPopular")}
                     </div>
                   </div>
                 )}
                 <CardHeader className="pb-4">
                   <CardTitle className="text-xl text-white">{plan.name}</CardTitle>
-                  <CardDescription className="text-gray-400">{plan.period} subscription</CardDescription>
+                  <CardDescription className="text-gray-400">
+                    {plan.period === "1 month" ? t("subscription.monthSubscription") :
+                     plan.period === "3 months" ? t("subscription.threeMonthSubscription") :
+                     plan.period === "6 months" ? t("subscription.sixMonthSubscription") :
+                     plan.period === "12 months" ? t("subscription.twelveMonthSubscription") :
+                     `${plan.period} subscription`}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-baseline gap-2">
@@ -394,12 +413,15 @@ export default function SubscriptionPage() {
                     <span className="text-gray-400">/ {plan.period}</span>
                   </div>
                   <ul className="space-y-2">
-                    {PLAN_PRICING[plan.id]?.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-2">
-                        <Check className="w-4 h-4 text-green-400 mt-0.5 shrink-0" />
-                        <span className="text-sm text-gray-300">{feature}</span>
-                      </li>
-                    ))}
+                    {PLAN_PRICING[plan.id]?.features.map((feature) => {
+                      const featureKey = feature.toLowerCase().replace(/\s+/g, "").replace(/&/g, "").replace(/[^a-z0-9]/g, "");
+                      return (
+                        <li key={feature} className="flex items-start gap-2">
+                          <Check className="w-4 h-4 text-green-400 mt-0.5 shrink-0" />
+                          <span className="text-sm text-gray-300">{t(`feature.${featureKey}`) || feature}</span>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </CardContent>
                 <CardFooter>
@@ -410,7 +432,7 @@ export default function SubscriptionPage() {
                       variant="outline"
                       className="w-full border-gray-700 bg-gray-900/50 text-white hover:bg-gray-800"
                     >
-                      {loading ? "Processing..." : "Renew Plan"}
+                      {loading ? t("subscription.processing") : t("subscription.renewPlan")}
                     </Button>
                   ) : (
                     <Button
@@ -418,7 +440,7 @@ export default function SubscriptionPage() {
                       variant={plan.popular ? "default" : "outline"}
                       className="w-full"
                     >
-                      Subscribe
+                      {t("subscription.subscribe")}
                     </Button>
                   )}
                 </CardFooter>
@@ -429,11 +451,11 @@ export default function SubscriptionPage() {
 
         {/* Subscription History */}
         <div>
-          <h2 className="text-xl font-semibold mb-4 text-white">Subscription History</h2>
+          <h2 className="text-xl font-semibold mb-4 text-white">{t("subscription.history")}</h2>
           <Card className="shadow-2xl border border-gray-800/50 bg-gradient-to-br from-gray-900/95 via-black/95 to-gray-900/95 backdrop-blur-sm">
             <CardContent className="p-6">
               {subscriptionHistory.length === 0 ? (
-                <p className="text-gray-400 text-center py-8">No subscription history available</p>
+                <p className="text-gray-400 text-center py-8">{t("subscription.noHistory")}</p>
               ) : (
                 <div className="space-y-4">
                   {subscriptionHistory.map((historyItem: any, index: number) => (
@@ -444,7 +466,13 @@ export default function SubscriptionPage() {
                       <div className="flex items-center justify-between mb-3">
                         <div>
                           <p className="text-white font-semibold">
-                            {PLAN_PRICING[historyItem.plan as SubscriptionPlan]?.name || historyItem.plan}
+                            {(() => {
+                              const planKey = historyItem.plan === "MONTHLY" ? "monthly" :
+                                            historyItem.plan === "THREE_MONTH" ? "starter" :
+                                            historyItem.plan === "SIX_MONTH" ? "professional" :
+                                            historyItem.plan === "TWELVE_MONTH" ? "enterprise" : "";
+                              return planKey ? t(`plan.${planKey}`) : (PLAN_PRICING[historyItem.plan as SubscriptionPlan]?.name || historyItem.plan);
+                            })()}
                           </p>
                           <p className="text-xs text-gray-400">
                             {new Date(historyItem.createdAt || historyItem.startDate).toLocaleDateString()}
@@ -462,48 +490,48 @@ export default function SubscriptionPage() {
                           }
                         >
                           {historyItem.paymentStatus === "REJECTED" || historyItem.paymentStatus === "rejected"
-                            ? "Payment Declined"
+                            ? t("subscription.paymentDeclined")
                             : historyItem.paymentStatus === "APPROVED" || historyItem.paymentStatus === "approved"
-                            ? "Payment Approved"
+                            ? t("subscription.paymentApproved")
                             : historyItem.status === "pending" || historyItem.status === "PENDING"
-                            ? "Pending"
+                            ? t("subscription.pending")
                             : historyItem.status === "expired" || historyItem.status === "EXPIRED"
-                            ? "Expired"
+                            ? t("subscription.expiredStatus")
                             : historyItem.status || "Unknown"}
                         </Badge>
                       </div>
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                          <p className="text-gray-400 text-xs">Start Date</p>
+                          <p className="text-gray-400 text-xs">{t("subscription.startDate")}</p>
                           <p className="text-white">
                             {new Date(historyItem.startDate).toLocaleDateString()}
                             {isNotStarted(historyItem) && (
-                              <span className="ml-2 text-xs text-gray-400">(Scheduled)</span>
+                              <span className="ml-2 text-xs text-gray-400">{t("subscription.scheduled")}</span>
                             )}
                           </p>
                         </div>
                         <div>
-                          <p className="text-gray-400 text-xs">End Date</p>
+                          <p className="text-gray-400 text-xs">{t("subscription.endDate")}</p>
                           <p className="text-white">
                             {getSubscriptionEndDate(historyItem).toLocaleDateString()}
                           </p>
                         </div>
                         <div>
-                          <p className="text-gray-400 text-xs">Price</p>
+                          <p className="text-gray-400 text-xs">{t("subscription.price")}</p>
                           <p className="text-white font-semibold">
                             €{PLAN_PRICING[historyItem.plan as SubscriptionPlan]?.price || historyItem.price || 0}
                           </p>
                         </div>
                         <div>
-                          <p className="text-gray-400 text-xs">Duration</p>
+                          <p className="text-gray-400 text-xs">{t("subscription.duration")}</p>
                           <p className="text-white">
-                            {PLAN_PRICING[historyItem.plan as SubscriptionPlan]?.months || 0} month(s)
+                            {PLAN_PRICING[historyItem.plan as SubscriptionPlan]?.months || 0} {t("subscription.months")}
                           </p>
                         </div>
                       </div>
                       {isNotStarted(historyItem) && (
                         <div className="mt-3 p-2 bg-blue-500/10 border border-blue-500/30 rounded text-xs text-blue-300">
-                          This subscription will start on {new Date(historyItem.startDate).toLocaleDateString()} (the day after your free trial ends).
+                          {t("subscription.scheduledMessage").replace("{date}", new Date(historyItem.startDate).toLocaleDateString())}
                         </div>
                       )}
                     </div>
@@ -519,13 +547,12 @@ export default function SubscriptionPage() {
           <CardHeader>
             <CardTitle className="text-lg text-white flex items-center gap-2">
               <Mail className="w-5 h-5" />
-              Email Notifications
+              {t("subscription.emailNotifications")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-gray-300">
-              You will receive an email notification 7 days before your subscription expires. 
-              Make sure your email address ({user?.email}) is up to date to receive these reminders.
+              {t("subscription.emailNotificationMessage").replace("{email}", user?.email || "")}
             </p>
           </CardContent>
         </Card>
