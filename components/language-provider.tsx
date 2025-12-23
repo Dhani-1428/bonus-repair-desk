@@ -292,6 +292,17 @@ const translations: Record<Language, Record<string, string>> = {
     "analytics.delivered": "Delivered",
     "analytics.recentDevices": "Recent Devices",
     "analytics.noDevicesYet": "No devices yet. Create your first device entry!",
+
+    // Table headers
+    "table.date": "Date",
+    "table.customer": "Customer",
+    "table.contact": "Contact",
+    "table.model": "Model",
+    "table.imei": "IMEI",
+    "table.service": "Service",
+    "table.status": "Status",
+    "table.price": "Price",
+    "table.action": "Action",
   },
   pt: {
     // Header
@@ -574,6 +585,17 @@ const translations: Record<Language, Record<string, string>> = {
     "analytics.delivered": "Entregue",
     "analytics.recentDevices": "Dispositivos Recentes",
     "analytics.noDevicesYet": "Ainda não há dispositivos. Crie a sua primeira entrada de dispositivo!",
+
+    // Table headers
+    "table.date": "Data",
+    "table.customer": "Cliente",
+    "table.contact": "Contacto",
+    "table.model": "Modelo",
+    "table.imei": "IMEI",
+    "table.service": "Serviço",
+    "table.status": "Estado",
+    "table.price": "Preço",
+    "table.action": "Ação",
   },
 }
 

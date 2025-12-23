@@ -539,15 +539,15 @@ export function SearchRepairTickets({ initialStatusFilter }: SearchRepairTickets
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="bg-gradient-to-r from-gray-800/50 to-gray-900/50 border-b-2 border-gray-700">
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider border-r border-gray-700">Date</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider border-r border-gray-700">Customer</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider border-r border-gray-700">Contact</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider border-r border-gray-700">Model</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider border-r border-gray-700">IMEI</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider border-r border-gray-700">Service</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider border-r border-gray-700">Status</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider border-r border-gray-700">Price</th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-gray-300 uppercase tracking-wider">Action</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider border-r border-gray-700">{t("table.date")}</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider border-r border-gray-700">{t("table.customer")}</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider border-r border-gray-700">{t("table.contact")}</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider border-r border-gray-700">{t("table.model")}</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider border-r border-gray-700">{t("table.imei")}</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider border-r border-gray-700">{t("table.service")}</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider border-r border-gray-700">{t("table.status")}</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider border-r border-gray-700">{t("table.price")}</th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-gray-300 uppercase tracking-wider">{t("table.action")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-800/50">
@@ -577,7 +577,11 @@ export function SearchRepairTickets({ initialStatusFilter }: SearchRepairTickets
                       </td>
                       <td className="px-4 py-3 text-sm border-r border-gray-800/30 whitespace-nowrap">
                         <Badge className={`${getStatusColor(ticket.status)} text-xs px-2 py-1`}>
-                          {ticket.status.replace("_", " ")}
+                          {ticket.status === "PENDING" || ticket.status === "pending" ? t("status.pending") :
+                           ticket.status === "IN_PROGRESS" || ticket.status === "in_progress" ? t("status.in_progress") :
+                           ticket.status === "COMPLETED" || ticket.status === "completed" ? t("status.completed") :
+                           ticket.status === "DELIVERED" || ticket.status === "delivered" ? t("status.delivered") :
+                           ticket.status.replace("_", " ")}
                         </Badge>
                       </td>
                       <td className="px-4 py-3 text-sm font-bold text-white border-r border-gray-800/30 whitespace-nowrap">
