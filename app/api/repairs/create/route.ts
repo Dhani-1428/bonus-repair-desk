@@ -188,9 +188,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Serial number should come from the request body (manual input)
-    const serialNoFromBody = body.serialNo || body.serialNumber || ""
-    let finalSerialNo: string
+    // Serial number should come from the request body (manual input) - OPTIONAL
+    const serialNoFromBody = body.serialNo || body.serialNumber || null
+    let finalSerialNo: string | null = null
 
     try {
       repairNumber = await generateRepairNumber(user.tenantId)
@@ -198,23 +198,19 @@ export async function POST(request: NextRequest) {
         ? selectedServices[0]
         : "Other"
       spu = await generateSPU(firstService, user.tenantId)
-      // Serial number is now manual input, not auto-generated
-      // Only generate if not provided (for backward compatibility)
-      if (!serialNoFromBody || serialNoFromBody.trim() === "") {
-        // Fallback: generate if not provided (for backward compatibility)
-        finalSerialNo = await generateSerialNumber(user.tenantId)
-      } else {
+      // Serial number is optional - only use if provided and not empty
+      if (serialNoFromBody && typeof serialNoFromBody === 'string' && serialNoFromBody.trim() !== "") {
         finalSerialNo = serialNoFromBody.trim()
       }
+      // If not provided, leave as null (don't auto-generate)
     } catch (error) {
       console.error("[API] Error generating identifiers:", error)
       // Fallback generation
       const timestamp = Date.now()
       repairNumber = `${new Date().getFullYear()}-${timestamp.toString().slice(-4)}`
       spu = `SPU-OTH-${timestamp.toString().slice(-3)}`
-      if (!serialNoFromBody || serialNoFromBody.trim() === "") {
-        finalSerialNo = `SN-${new Date().getFullYear()}${(new Date().getMonth() + 1).toString().padStart(2, "0")}-${timestamp.toString().slice(-4)}`
-      } else {
+      // Serial number remains null if not provided
+      if (serialNoFromBody && typeof serialNoFromBody === 'string' && serialNoFromBody.trim() !== "") {
         finalSerialNo = serialNoFromBody.trim()
       }
     }

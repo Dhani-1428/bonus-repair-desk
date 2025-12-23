@@ -243,7 +243,7 @@ export function NewRepairTicketForm() {
             imeiNo: device.imeiNo,
             brand: device.brand || device.model.split(" ")[0] || "N/A",
             model: device.model,
-            serialNo: device.serialNo || null,
+            serialNo: device.serialNo?.trim() || null,
             warranty: device.warrantyUntil30Days ? t("form.warrantyUntil30Days") : t("form.withoutWarranty"),
             simCard: device.simCard,
             memoryCard: device.memoryCard,
@@ -263,22 +263,34 @@ export function NewRepairTicketForm() {
 
         let data
         try {
-          data = await response.json()
-        } catch (jsonError) {
-          console.error("[NewRepairTicketForm] Failed to parse JSON response:", jsonError)
-          const text = await response.text()
-          console.error("[NewRepairTicketForm] Response text:", text)
-          throw new Error("Invalid response from server. Please try again.")
+          const responseText = await response.text()
+          if (!responseText) {
+            throw new Error("Empty response from server")
+          }
+          try {
+            data = JSON.parse(responseText)
+          } catch (parseError) {
+            console.error("[NewRepairTicketForm] Failed to parse JSON response:", parseError)
+            console.error("[NewRepairTicketForm] Response text:", responseText)
+            throw new Error(`Server error: ${responseText.substring(0, 200)}`)
+          }
+        } catch (jsonError: any) {
+          console.error("[NewRepairTicketForm] Failed to parse response:", jsonError)
+          throw new Error(jsonError.message || "Invalid response from server. Please try again.")
         }
 
         if (!response.ok) {
+          const errorMessage = data?.error || data?.message || data?.details || `HTTP ${response.status}: ${response.statusText}`
           console.error("[NewRepairTicketForm] API Error:", {
             status: response.status,
             statusText: response.statusText,
             data: data,
-            error: data?.error || data?.message || "Unknown error"
+            error: errorMessage
           })
-          throw new Error(data?.error || data?.message || `Failed to create ticket for device ${devices.indexOf(device) + 1}`)
+          
+          // Show specific error message to user
+          toast.error(errorMessage)
+          throw new Error(errorMessage)
         }
 
         // Normalize ticket data - parse JSON fields if needed
