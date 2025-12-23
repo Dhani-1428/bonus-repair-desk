@@ -79,9 +79,24 @@ export async function POST(request: NextRequest) {
       endDate,
     } = body
 
-    if (!userId || !plan || !planName || !price || !months || !startDate || !endDate) {
+    // Validate required fields
+    const missingFields = []
+    if (!userId) missingFields.push("userId")
+    if (!plan) missingFields.push("plan")
+    if (!planName) missingFields.push("planName")
+    if (price === undefined || price === null) missingFields.push("price")
+    if (!months) missingFields.push("months")
+    if (!startDate) missingFields.push("startDate")
+    if (!endDate) missingFields.push("endDate")
+
+    if (missingFields.length > 0) {
+      console.error("[API] ❌ Missing required fields:", missingFields)
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { 
+          error: "Missing required fields",
+          missingFields,
+          received: { userId, plan, planName, price, months, startDate, endDate },
+        },
         { status: 400 }
       )
     }
@@ -101,12 +116,55 @@ export async function POST(request: NextRequest) {
 
     const paymentId = uuidv4()
 
-    await execute(
-      `INSERT INTO payment_requests 
-       (id, userId, tenantId, plan, planName, price, months, startDate, endDate, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING')`,
-      [paymentId, userId, user.tenantId, plan, planName, parseFloat(price), parseInt(months), startDate, endDate]
-    )
+    // Validate and parse values
+    const parsedPrice = parseFloat(price)
+    const parsedMonths = parseInt(months)
+
+    if (isNaN(parsedPrice) || parsedPrice <= 0) {
+      console.error("[API] ❌ Invalid price:", price)
+      return NextResponse.json(
+        { error: "Invalid price value" },
+        { status: 400 }
+      )
+    }
+
+    if (isNaN(parsedMonths) || parsedMonths <= 0) {
+      console.error("[API] ❌ Invalid months:", months)
+      return NextResponse.json(
+        { error: "Invalid months value" },
+        { status: 400 }
+      )
+    }
+
+    console.log("[API] Creating payment request:", {
+      paymentId,
+      userId,
+      tenantId: user.tenantId,
+      plan,
+      planName,
+      price: parsedPrice,
+      months: parsedMonths,
+      startDate,
+      endDate,
+    })
+
+    try {
+      await execute(
+        `INSERT INTO payment_requests 
+         (id, userId, tenantId, plan, planName, price, months, startDate, endDate, status)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING')`,
+        [paymentId, userId, user.tenantId, plan, planName, parsedPrice, parsedMonths, startDate, endDate]
+      )
+      console.log("[API] ✅ Payment request inserted into database")
+    } catch (dbError: any) {
+      console.error("[API] ❌ Database error creating payment request:", dbError?.message || dbError)
+      console.error("[API] Error details:", {
+        code: dbError?.code,
+        sqlState: dbError?.sqlState,
+        sqlMessage: dbError?.sqlMessage,
+      })
+      throw dbError // Re-throw to be caught by outer try-catch
+    }
 
     // Fetch created payment with user data
     const payment = await queryOne(
@@ -136,45 +194,78 @@ export async function POST(request: NextRequest) {
 
     // Send receipt email to user
     try {
-      const userForReceipt = {
-        id: payment.user_id,
-        name: payment.user_name,
-        email: payment.user_email,
-        shopName: payment.user_shopName,
-        contactNumber: payment.user_contactNumber,
-        role: "USER" as const,
-        tenantId: payment.tenantId,
-        createdAt: new Date().toISOString(),
+      if (!payment.user_id || !payment.user_email) {
+        console.error("[API] ⚠️  Cannot send receipt email - missing user data:", {
+          user_id: payment.user_id,
+          user_email: payment.user_email,
+        })
+      } else {
+        const userForReceipt = {
+          id: payment.user_id,
+          name: payment.user_name || "User",
+          email: payment.user_email,
+          shopName: payment.user_shopName || null,
+          contactNumber: payment.user_contactNumber || null,
+          role: "USER" as const,
+          tenantId: payment.tenantId,
+          createdAt: new Date().toISOString(),
+        }
+        console.log("[API] Sending payment receipt email to user:", userForReceipt.email)
+        const receiptEmailSent = await sendPaymentReceiptEmail(userForReceipt, formatted)
+        if (receiptEmailSent) {
+          console.log("[API] ✅ Payment receipt email sent successfully to user")
+        } else {
+          console.error("[API] ⚠️  Payment receipt email returned false - email may not have been sent")
+        }
       }
-      await sendPaymentReceiptEmail(userForReceipt, formatted)
-    } catch (emailError) {
-      console.error("[API] Error sending payment receipt email:", emailError)
+    } catch (emailError: any) {
+      console.error("[API] ❌ Error sending payment receipt email:", emailError?.message || emailError)
+      console.error("[API] Error details:", {
+        message: emailError?.message,
+        stack: emailError?.stack?.substring(0, 500),
+      })
       // Don't fail payment creation if email fails
     }
 
     // Send admin notification about new payment request
     try {
-      const user = {
-        id: payment.user_id,
-        name: payment.user_name,
-        email: payment.user_email,
-        shopName: payment.user_shopName,
-        contactNumber: payment.user_contactNumber,
-        role: "USER" as const,
-        tenantId: payment.tenantId,
-        createdAt: new Date().toISOString(),
-      }
-      console.log("[API] Sending admin payment request notification to bonusrepairdesk@gmail.com for payment:", formatted.id)
-      const emailSent = await sendAdminPaymentRequestNotification(formatted, user)
-      if (emailSent) {
-        console.log("[API] ✅ Admin payment request notification sent successfully")
+      if (!payment.user_id || !payment.user_email) {
+        console.error("[API] ⚠️  Cannot send admin notification - missing user data:", {
+          user_id: payment.user_id,
+          user_email: payment.user_email,
+        })
       } else {
-        console.error("[API] ⚠️  Admin payment request notification returned false - email may not have been sent")
+        const user = {
+          id: payment.user_id,
+          name: payment.user_name || "User",
+          email: payment.user_email,
+          shopName: payment.user_shopName || null,
+          contactNumber: payment.user_contactNumber || null,
+          role: "USER" as const,
+          tenantId: payment.tenantId,
+          createdAt: new Date().toISOString(),
+        }
+        console.log("[API] Sending admin payment request notification to bonusrepairdesk@gmail.com for payment:", formatted.id)
+        console.log("[API] Payment details:", {
+          id: formatted.id,
+          plan: formatted.planName || formatted.plan,
+          price: formatted.price,
+          user: user.name,
+          userEmail: user.email,
+        })
+        const emailSent = await sendAdminPaymentRequestNotification(formatted, user)
+        if (emailSent) {
+          console.log("[API] ✅ Admin payment request notification sent successfully to bonusrepairdesk@gmail.com")
+        } else {
+          console.error("[API] ⚠️  Admin payment request notification returned false - email may not have been sent")
+        }
       }
     } catch (emailError: any) {
       console.error("[API] ❌ Error sending admin payment request notification:", emailError?.message || emailError)
       console.error("[API] Error details:", {
         message: emailError?.message,
+        code: emailError?.code,
+        response: emailError?.response,
         stack: emailError?.stack?.substring(0, 500),
       })
       // Don't fail payment creation if email fails, but log the error clearly
