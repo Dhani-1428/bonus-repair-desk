@@ -31,8 +31,8 @@ interface DeviceFormData {
   repairObs: string
   selectedServices: string[]
   condition: string
+  customCondition: string
   problem: string
-  customProblem: string
   price: string
   imeiError: string | null
   spu?: string // Auto-generated, read-only
@@ -144,7 +144,7 @@ const MOBILE_CONDITIONS = [
   "Water damage visible",
   "Button not working",
   "Charging port damaged",
-  "Other (specify in notes)",
+  "Other",
 ]
 
 // Generate Client ID
@@ -177,14 +177,15 @@ export function NewRepairTicketForm() {
       repairObs: "",
       selectedServices: [],
       condition: "",
+      customCondition: "",
       problem: "",
-      customProblem: "",
       price: "",
       imeiError: null,
     },
   ])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showConditionDialog, setShowConditionDialog] = useState<number | null>(null)
+  const [showCustomConditionDialog, setShowCustomConditionDialog] = useState<number | null>(null)
   
   // Service to SPU code mapping (same as API)
   const SERVICE_SPU_MAP: Record<string, string> = {
@@ -340,9 +341,8 @@ export function NewRepairTicketForm() {
         toast.error(`Device ${i + 1}: At least one service is required`)
         return
       }
-      const problemText = device.problem === "Other (specify below)" ? device.customProblem : (device.problem === "Custom" ? device.customProblem : device.problem)
-      if (!device.model.trim() || !problemText.trim() || !device.price.trim()) {
-        toast.error(`Device ${i + 1}: Model, problem, and price are required`)
+      if (!device.model.trim() || !device.problem.trim() || !device.price.trim()) {
+        toast.error(`Device ${i + 1}: Model, technician notes, and price are required`)
         return
       }
     }
@@ -374,8 +374,10 @@ export function NewRepairTicketForm() {
             equipmentObs: device.equipmentObs || null,
             repairObs: device.repairObs || null,
             selectedServices: device.selectedServices,
-            condition: device.condition || null,
-            problem: device.problem === "Other (specify below)" || device.problem === "Custom" ? device.customProblem : device.problem,
+            condition: device.condition === "Other" && device.customCondition 
+              ? `Other: ${device.customCondition}` 
+              : device.condition || null,
+            problem: device.problem,
             price: parseFloat(device.price),
             status: "PENDING",
           }),
@@ -861,7 +863,9 @@ export function NewRepairTicketForm() {
                           variant="outline"
                           className="w-full bg-gray-800/50 border-gray-700 text-white hover:bg-gray-800"
                         >
-                          {device.condition || "Select condition"}
+                          {device.condition === "Other" && device.customCondition 
+                            ? `Other: ${device.customCondition.substring(0, 30)}${device.customCondition.length > 30 ? "..." : ""}`
+                            : device.condition || "Select condition"}
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-md">
@@ -877,8 +881,14 @@ export function NewRepairTicketForm() {
                               key={condition}
                               type="button"
                               onClick={() => {
-                                updateDevice(deviceIndex, "condition", condition)
-                                setShowConditionDialog(null)
+                                if (condition === "Other") {
+                                  setShowConditionDialog(null)
+                                  setShowCustomConditionDialog(deviceIndex)
+                                } else {
+                                  updateDevice(deviceIndex, "condition", condition)
+                                  updateDevice(deviceIndex, "customCondition", "")
+                                  setShowConditionDialog(null)
+                                }
                               }}
                               className="w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-800 rounded-md transition-colors"
                             >
@@ -888,62 +898,67 @@ export function NewRepairTicketForm() {
                         </div>
                       </DialogContent>
                     </Dialog>
+                    
+                    {/* Custom Condition Dialog */}
+                    <Dialog open={showCustomConditionDialog === deviceIndex} onOpenChange={(open) => setShowCustomConditionDialog(open ? deviceIndex : null)}>
+                      <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Specify Custom Condition</DialogTitle>
+                          <DialogDescription className="text-gray-400">
+                            Please describe the condition of the device when it arrived
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4">
+                          <Textarea
+                            placeholder="Enter custom condition description"
+                            value={device.customCondition}
+                            onChange={(e) => updateDevice(deviceIndex, "customCondition", e.target.value)}
+                            rows={4}
+                            className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 focus:border-blue-500"
+                          />
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => {
+                                setShowCustomConditionDialog(null)
+                                if (!device.customCondition.trim()) {
+                                  updateDevice(deviceIndex, "condition", "")
+                                }
+                              }}
+                              className="border-gray-700 bg-gray-900/50 text-white hover:bg-gray-800"
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              type="button"
+                              onClick={() => {
+                                if (device.customCondition.trim()) {
+                                  updateDevice(deviceIndex, "condition", "Other")
+                                  setShowCustomConditionDialog(null)
+                                }
+                              }}
+                              className="bg-blue-600 hover:bg-blue-700 text-white"
+                              disabled={!device.customCondition.trim()}
+                            >
+                              Save
+                            </Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
-                    <Label className="text-gray-200">General Issues *</Label>
-                    <Select
+                    <Label className="text-gray-200">Technician Notes *</Label>
+                    <Textarea
+                      placeholder="Enter technician notes about the problem/issue"
                       value={device.problem}
-                      onValueChange={(value) => updateDevice(deviceIndex, "problem", value)}
-                    >
-                      <SelectTrigger className="bg-gray-800/50 border-gray-700 text-white">
-                        <SelectValue placeholder="Select or type a problem" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-gray-900 border-gray-700 text-white max-h-[300px]">
-                        <div className="px-2 py-1 text-xs text-gray-400 font-semibold">Mobile Issues</div>
-                        {GENERAL_ISSUES.mobile.map((issue) => (
-                          <SelectItem key={issue} value={issue} className="text-white hover:bg-gray-800">
-                            {issue}
-                          </SelectItem>
-                        ))}
-                        <div className="px-2 py-1 text-xs text-gray-400 font-semibold mt-2">Laptop Issues</div>
-                        {GENERAL_ISSUES.laptop.map((issue) => (
-                          <SelectItem key={issue} value={issue} className="text-white hover:bg-gray-800">
-                            {issue}
-                          </SelectItem>
-                        ))}
-                        <div className="px-2 py-1 text-xs text-gray-400 font-semibold mt-2">Computer Issues</div>
-                        {GENERAL_ISSUES.computer.map((issue) => (
-                          <SelectItem key={issue} value={issue} className="text-white hover:bg-gray-800">
-                            {issue}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {device.problem === "Other (specify below)" && (
-                      <Textarea
-                        placeholder="Please specify the problem"
-                        value={device.customProblem}
-                        onChange={(e) => updateDevice(deviceIndex, "customProblem", e.target.value)}
-                        rows={3}
-                        required
-                        className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 focus:border-blue-500 mt-2"
-                      />
-                    )}
-                    {!device.problem && (
-                      <Textarea
-                        placeholder="Or type your problem here if not in the list"
-                        value={device.customProblem}
-                        onChange={(e) => {
-                          updateDevice(deviceIndex, "customProblem", e.target.value)
-                          if (e.target.value) {
-                            updateDevice(deviceIndex, "problem", "Custom")
-                          }
-                        }}
-                        rows={3}
-                        className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 focus:border-blue-500 mt-2"
-                      />
-                    )}
+                      onChange={(e) => updateDevice(deviceIndex, "problem", e.target.value)}
+                      rows={4}
+                      required
+                      className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 focus:border-blue-500"
+                    />
                   </div>
                 </div>
               </div>
