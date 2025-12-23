@@ -605,10 +605,19 @@ export function NewRepairTicketForm() {
                         />
                         <div className="flex items-center gap-2">
                           <svg className="w-6 h-6 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-1 14H5V7h14v11z"/>
-                            <rect x="7" y="9" width="10" height="6" rx="1" fill="white"/>
-                            <circle cx="9.5" cy="12" r="0.5" fill="currentColor"/>
-                            <circle cx="14.5" cy="12" r="0.5" fill="currentColor"/>
+                            {/* SIM Card - rectangular with cut corner */}
+                            <path d="M4 4h16v16H4V4zm2 2v12h12V6H6z" fill="currentColor"/>
+                            {/* Cut corner */}
+                            <path d="M4 4l3-3v3H4z" fill="currentColor" opacity="0.6"/>
+                            {/* SIM card contacts/gold pads */}
+                            <rect x="8" y="9" width="2" height="1.5" fill="white" opacity="0.9"/>
+                            <rect x="11" y="9" width="2" height="1.5" fill="white" opacity="0.9"/>
+                            <rect x="14" y="9" width="2" height="1.5" fill="white" opacity="0.9"/>
+                            <rect x="8" y="11.5" width="2" height="1.5" fill="white" opacity="0.9"/>
+                            <rect x="11" y="11.5" width="2" height="1.5" fill="white" opacity="0.9"/>
+                            <rect x="14" y="11.5" width="2" height="1.5" fill="white" opacity="0.9"/>
+                            <rect x="8" y="14" width="2" height="1.5" fill="white" opacity="0.9"/>
+                            <rect x="11" y="14" width="2" height="1.5" fill="white" opacity="0.9"/>
                           </svg>
                           <span className="text-base font-medium text-white">{t("form.simCard")}</span>
                         </div>
@@ -624,9 +633,16 @@ export function NewRepairTicketForm() {
                         />
                         <div className="flex items-center gap-2">
                           <svg className="w-6 h-6 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 18H6V4h12v16z"/>
-                            <path d="M8 6h8v2H8V6zm0 4h8v2H8v-2zm0 4h5v2H8v-2z" fill="white"/>
-                            <path d="M16 8h2v8h-2V8z" fill="white"/>
+                            {/* SD/Memory Card - rectangular with lock tab */}
+                            <path d="M4 4h16v16H4V4zm2 2v12h12V6H6z" fill="currentColor"/>
+                            {/* Lock tab on left */}
+                            <path d="M4 4h3v3H4V4z" fill="currentColor" opacity="0.7"/>
+                            {/* Card label area */}
+                            <rect x="8" y="7" width="8" height="10" fill="white" opacity="0.2"/>
+                            {/* Text lines on card */}
+                            <rect x="9" y="9" width="6" height="0.8" fill="white" opacity="0.6"/>
+                            <rect x="9" y="11" width="4" height="0.8" fill="white" opacity="0.6"/>
+                            <rect x="9" y="13" width="5" height="0.8" fill="white" opacity="0.6"/>
                           </svg>
                           <span className="text-base font-medium text-white">{t("form.memoryCard")}</span>
                         </div>
@@ -642,8 +658,15 @@ export function NewRepairTicketForm() {
                         />
                         <div className="flex items-center gap-2">
                           <svg className="w-6 h-6 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M11 21h-1l1-7H7.5c-.58 0-.57-.32-.38-.66.19-.34.05-.08.07-.12C6.44 13 10 11 10 11V7.5c0-.28.22-.5.5-.5s.5.22.5.5V11h2V7.5c0-.28.22-.5.5-.5s.5.22.5.5V11h2V7.5c0-.28.22-.5.5-.5s.5.22.5.5V11c0 3-1.5 5-5 5h-1l1 7z"/>
-                            <rect x="10" y="2" width="4" height="6" rx="1"/>
+                            {/* Charger plug - rectangular with prongs */}
+                            <rect x="9" y="2" width="6" height="8" rx="1" fill="currentColor"/>
+                            {/* Plug prongs */}
+                            <rect x="8" y="6" width="1.5" height="4" rx="0.3" fill="currentColor"/>
+                            <rect x="14.5" y="6" width="1.5" height="4" rx="0.3" fill="currentColor"/>
+                            {/* Cable */}
+                            <path d="M12 10v10M10 12h4M10 14h4M10 16h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                            {/* Charging indicator light */}
+                            <circle cx="12" cy="8" r="1" fill="white" opacity="0.9"/>
                           </svg>
                           <span className="text-base font-medium text-white">{t("form.charger")}</span>
                         </div>
@@ -658,8 +681,13 @@ export function NewRepairTicketForm() {
                           onChange={(e) => updateDevice(deviceIndex, "battery", e.target.checked)}
                         />
                         <div className="flex items-center gap-2">
-                          <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                          <svg className="w-6 h-6 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                            {/* Battery body */}
+                            <rect x="4" y="7" width="14" height="10" rx="1" fill="currentColor"/>
+                            {/* Battery positive terminal */}
+                            <rect x="18" y="10" width="2" height="4" rx="0.5" fill="currentColor"/>
+                            {/* Battery level indicator */}
+                            <rect x="6" y="9" width="10" height="6" rx="0.5" fill="white" opacity="0.9"/>
                           </svg>
                           <span className="text-base font-medium text-white">{t("form.battery")}</span>
                         </div>
@@ -675,9 +703,13 @@ export function NewRepairTicketForm() {
                         />
                         <div className="flex items-center gap-2">
                           <svg className="w-6 h-6 text-red-400" fill="currentColor" viewBox="0 0 24 24">
+                            {/* Cloud */}
                             <path d="M19.36 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.64-4.96z"/>
+                            {/* Rain drops */}
                             <path d="M7 16l1 2h2l-1-2M11 16l1 2h2l-1-2M15 16l1 2h2l-1-2" stroke="white" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
                             <path d="M7 19l1 2h2l-1-2M11 19l1 2h2l-1-2M15 19l1 2h2l-1-2" stroke="white" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+                            {/* Additional rain drops for better visibility */}
+                            <path d="M9 18l0.5 1h1l-0.5-1M13 18l0.5 1h1l-0.5-1M17 18l0.5 1h1l-0.5-1" stroke="white" strokeWidth="1.2" strokeLinecap="round" fill="none"/>
                           </svg>
                           <span className="text-base font-medium text-white">{t("form.waterDamaged")}</span>
                         </div>
