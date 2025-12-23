@@ -688,6 +688,7 @@ const translations: Record<Language, Record<string, string>> = {
     "subscription.twelveMonths": "12 meses",
     "subscription.for": "por",
     "subscription.months": "meses",
+    "subscription.subscription": "subscrição",
     "subscription.renewPlan": "Renovar Plano",
     "subscription.subscribe": "Subscrever",
     "subscription.processing": "A processar...",
