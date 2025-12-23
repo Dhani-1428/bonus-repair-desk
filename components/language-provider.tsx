@@ -123,6 +123,10 @@ const translations: Record<Language, Record<string, string>> = {
     "error.imei.inline": "IMEI must be 15 digits (0-9).",
     "error.service.required": "Please select at least one service.",
     "error.device.notFound": "Device not found. It may have already been deleted.",
+    "error.userNotFound": "User not found. Please log in again.",
+    "success.deviceUpdated": "Device updated successfully!",
+    "error.deviceUpdateFailed": "Failed to update device",
+    "error.deviceDeleteFailed": "Failed to delete device",
 
     // SearchRepairTickets
     "search.title": "Search Devices",
@@ -462,6 +466,10 @@ const translations: Record<Language, Record<string, string>> = {
     "error.imei.inline": "O IMEI deve ter 15 dígitos (0-9).",
     "error.service.required": "Selecione pelo menos um serviço.",
     "error.device.notFound": "Dispositivo não encontrado. Pode já ter sido apagado.",
+    "error.userNotFound": "Utilizador não encontrado. Por favor, inicie sessão novamente.",
+    "success.deviceUpdated": "Dispositivo atualizado com sucesso!",
+    "error.deviceUpdateFailed": "Falha ao atualizar dispositivo",
+    "error.deviceDeleteFailed": "Falha ao eliminar dispositivo",
 
     // SearchRepairTickets
     "search.title": "Pesquisar dispositivos",

@@ -322,7 +322,7 @@ export function SearchRepairTickets({ initialStatusFilter }: SearchRepairTickets
     try {
       const userId = currentUser?.id
       if (!userId) {
-        toast.error("User not found. Please log in again.")
+        toast.error(t("error.userNotFound"))
         return
       }
 
@@ -342,16 +342,16 @@ export function SearchRepairTickets({ initialStatusFilter }: SearchRepairTickets
         const storedTickets = await getUserData<any[]>("repairTickets", [])
         const reloadedTickets = Array.isArray(storedTickets) ? storedTickets : []
         setTickets(reloadedTickets)
-        toast.success("Device updated successfully!")
+        toast.success(t("success.deviceUpdated"))
         setIsEditDialogOpen(false)
         setEditingTicket(null)
       } else {
         const data = await response.json()
-        throw new Error(data.error || "Failed to update device")
+        throw new Error(data.error || t("error.deviceUpdateFailed"))
       }
     } catch (error: any) {
       console.error("[SearchRepairTickets] Error updating ticket:", error)
-      toast.error(error.message || "Failed to update device")
+      toast.error(error.message || t("error.deviceUpdateFailed"))
     }
   }
 
@@ -359,7 +359,7 @@ export function SearchRepairTickets({ initialStatusFilter }: SearchRepairTickets
     try {
       const userId = currentUser?.id
       if (!userId) {
-        toast.error("User not found. Please log in again.")
+        toast.error(t("error.userNotFound"))
         return
       }
 
@@ -376,7 +376,7 @@ export function SearchRepairTickets({ initialStatusFilter }: SearchRepairTickets
         toast.success("Device moved to trash")
       } else {
         const data = await response.json()
-        throw new Error(data.error || "Failed to delete device")
+        throw new Error(data.error || t("error.deviceDeleteFailed"))
       }
     } catch (error: any) {
       console.error("[SearchRepairTickets] Error deleting ticket:", error)
