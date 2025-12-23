@@ -135,6 +135,36 @@ export async function POST(request: NextRequest) {
     
     console.log("[API] ✅ User found, tenantId:", user.tenantId)
 
+    // Ensure payment_requests table exists
+    try {
+      await execute(`
+        CREATE TABLE IF NOT EXISTS payment_requests (
+          id VARCHAR(36) PRIMARY KEY,
+          userId VARCHAR(36) NOT NULL,
+          tenantId VARCHAR(36) NOT NULL,
+          plan ENUM('MONTHLY', 'THREE_MONTH', 'SIX_MONTH', 'TWELVE_MONTH') NOT NULL,
+          planName VARCHAR(255) NOT NULL,
+          price DECIMAL(10, 2) NOT NULL,
+          months INT NOT NULL,
+          startDate DATETIME NOT NULL,
+          endDate DATETIME NOT NULL,
+          status ENUM('PENDING', 'APPROVED', 'REJECTED') DEFAULT 'PENDING',
+          createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          INDEX idx_userId (userId),
+          INDEX idx_tenantId (tenantId),
+          INDEX idx_status (status)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `)
+      console.log("[API] ✅ payment_requests table verified/created")
+    } catch (tableError: any) {
+      // If table already exists, that's fine - continue
+      if (tableError?.code !== "ER_TABLE_EXISTS_ERROR") {
+        console.error("[API] ⚠️  Error ensuring payment_requests table exists:", tableError?.message || tableError)
+        // Continue anyway - table might already exist
+      }
+    }
+
     const paymentId = uuidv4()
 
     // Validate and parse values
