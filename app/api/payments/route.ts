@@ -509,6 +509,10 @@ export async function PUT(request: NextRequest) {
       }
 
       // Update or create subscription
+      // Convert dates to MySQL format
+      const subscriptionStartDate = toMySQLDateTime(payment.startDate) || ""
+      const subscriptionEndDate = toMySQLDateTime(payment.endDate) || ""
+      
       let subscriptionId: string
       if (existing) {
         await execute(
@@ -516,7 +520,7 @@ export async function PUT(request: NextRequest) {
            plan = ?, status = 'ACTIVE', startDate = ?, endDate = ?, price = ?, 
            paymentStatus = 'APPROVED', paymentId = ?, isFreeTrial = FALSE
            WHERE id = ?`,
-          [payment.plan, payment.startDate, payment.endDate, payment.price, id, existing.id]
+          [payment.plan, subscriptionStartDate, subscriptionEndDate, payment.price, id, existing.id]
         )
         subscriptionId = existing.id
       } else {
