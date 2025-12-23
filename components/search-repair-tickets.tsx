@@ -519,7 +519,7 @@ export function SearchRepairTickets({ initialStatusFilter }: SearchRepairTickets
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
             </div>
-            All Devices ({filteredTickets.length} {filteredTickets.length === 1 ? t("search.results.device") : t("search.results.devices")})
+            {t("common.allDevices")} ({filteredTickets.length} {filteredTickets.length === 1 ? t("search.results.device") : t("search.results.devices")})
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6 text-white">
@@ -577,7 +577,11 @@ export function SearchRepairTickets({ initialStatusFilter }: SearchRepairTickets
                       </td>
                       <td className="px-4 py-3 text-sm border-r border-gray-800/30 whitespace-nowrap">
                         <Badge className={`${getStatusColor(ticket.status)} text-xs px-2 py-1`}>
-                          {ticket.status.replace("_", " ")}
+                          {ticket.status === "pending" || ticket.status === "PENDING" ? t("status.pending") :
+                           ticket.status === "in_progress" || ticket.status === "IN_PROGRESS" ? t("status.in_progress") :
+                           ticket.status === "completed" || ticket.status === "COMPLETED" ? t("status.completed") :
+                           ticket.status === "delivered" || ticket.status === "DELIVERED" ? t("status.delivered") :
+                           ticket.status.replace("_", " ")}
                         </Badge>
                       </td>
                       <td className="px-4 py-3 text-sm font-bold text-white border-r border-gray-800/30 whitespace-nowrap">
@@ -602,60 +606,60 @@ export function SearchRepairTickets({ initialStatusFilter }: SearchRepairTickets
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-gray-900 border-gray-800 text-white">
           <DialogHeader>
-            <DialogTitle className="text-white">Edit Device</DialogTitle>
+            <DialogTitle className="text-white">{t("ticket.edit")}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleEditSubmit} className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="edit-customerName" className="text-gray-200">Customer Name *</Label>
+                <Label htmlFor="edit-customerName" className="text-gray-200">{t("form.customerName")} *</Label>
                 <Input id="edit-customerName" value={editFormData.customerName || ""} onChange={(e) => setEditFormData({ ...editFormData, customerName: e.target.value })} required className="bg-gray-800/50 border-gray-700 text-white" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-contact" className="text-gray-200">Contact *</Label>
+                <Label htmlFor="edit-contact" className="text-gray-200">{t("table.contact")} *</Label>
                 <Input id="edit-contact" value={editFormData.contact || ""} onChange={(e) => setEditFormData({ ...editFormData, contact: e.target.value })} required className="bg-gray-800/50 border-gray-700 text-white" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-imeiNo" className="text-gray-200">IMEI Number *</Label>
+                <Label htmlFor="edit-imeiNo" className="text-gray-200">{t("form.imei")} *</Label>
                 <Input id="edit-imeiNo" value={editFormData.imeiNo || ""} onChange={(e) => setEditFormData({ ...editFormData, imeiNo: e.target.value })} required className="bg-gray-800/50 border-gray-700 text-white" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-model" className="text-gray-200">Model *</Label>
+                <Label htmlFor="edit-model" className="text-gray-200">{t("form.model")} *</Label>
                 <Input id="edit-model" value={editFormData.model || ""} onChange={(e) => setEditFormData({ ...editFormData, model: e.target.value })} required className="bg-gray-800/50 border-gray-700 text-white" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-price" className="text-gray-200">Price *</Label>
+                <Label htmlFor="edit-price" className="text-gray-200">{t("form.price")} *</Label>
                 <Input id="edit-price" type="number" step="0.01" value={editFormData.price || ""} onChange={(e) => setEditFormData({ ...editFormData, price: e.target.value })} required className="bg-gray-800/50 border-gray-700 text-white" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-serviceName" className="text-gray-200">Service Name *</Label>
+                <Label htmlFor="edit-serviceName" className="text-gray-200">{t("form.serviceNames")} *</Label>
                 <Input id="edit-serviceName" value={editFormData.serviceName || ""} onChange={(e) => setEditFormData({ ...editFormData, serviceName: e.target.value })} required className="bg-gray-800/50 border-gray-700 text-white" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-status" className="text-gray-200">Status *</Label>
+                <Label htmlFor="edit-status" className="text-gray-200">{t("table.status")} *</Label>
                 <Select value={editFormData.status || "pending"} onValueChange={(value) => setEditFormData({ ...editFormData, status: value })}>
                   <SelectTrigger id="edit-status" className="bg-gray-800/50 border-gray-700 text-white">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-gray-900 border-gray-700" side="bottom" sideOffset={4}>
-                    <SelectItem value="pending" className="text-white">Pending</SelectItem>
-                    <SelectItem value="in_progress" className="text-white">In Progress</SelectItem>
-                    <SelectItem value="completed" className="text-white">Completed</SelectItem>
-                    <SelectItem value="delivered" className="text-white">Out</SelectItem>
+                    <SelectItem value="pending" className="text-white">{t("status.pending")}</SelectItem>
+                    <SelectItem value="in_progress" className="text-white">{t("status.in_progress")}</SelectItem>
+                    <SelectItem value="completed" className="text-white">{t("status.completed")}</SelectItem>
+                    <SelectItem value="delivered" className="text-white">{t("status.delivered")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-condition" className="text-gray-200">Mobile Condition (On Arrival)</Label>
+              <Label htmlFor="edit-condition" className="text-gray-200">{t("form.condition")}</Label>
               <Textarea id="edit-condition" value={editFormData.condition || ""} onChange={(e) => setEditFormData({ ...editFormData, condition: e.target.value })} className="bg-gray-800/50 border-gray-700 text-white min-h-[80px]" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-problem" className="text-gray-200">Technician Notes *</Label>
+              <Label htmlFor="edit-problem" className="text-gray-200">{t("form.technicianNotes")} *</Label>
               <Textarea id="edit-problem" value={editFormData.problem || ""} onChange={(e) => setEditFormData({ ...editFormData, problem: e.target.value })} required className="bg-gray-800/50 border-gray-700 text-white min-h-[100px]" />
             </div>
             <div className="flex justify-end gap-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => { setIsEditDialogOpen(false); setEditingTicket(null) }} className="border-gray-700 bg-gray-900/50 text-white hover:bg-gray-800">Cancel</Button>
-              <Button type="submit" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl hover:shadow-blue-500/20 transform hover:scale-105 transition-all duration-300">Save Changes</Button>
+              <Button type="button" variant="outline" onClick={() => { setIsEditDialogOpen(false); setEditingTicket(null) }} className="border-gray-700 bg-gray-900/50 text-white hover:bg-gray-800">{t("form.cancel")}</Button>
+              <Button type="submit" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl hover:shadow-blue-500/20 transform hover:scale-105 transition-all duration-300">{t("common.saveChanges")}</Button>
             </div>
           </form>
         </DialogContent>

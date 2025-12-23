@@ -87,6 +87,9 @@ const translations: Record<Language, Record<string, string>> = {
     // Common
     "common.show": "Show",
     "common.hide": "Hide",
+    "common.save": "Save",
+    "common.saveChanges": "Save Changes",
+    "common.allDevices": "All Devices",
     "form.equipmentCheck": "Equipment Check",
     "form.simCard": "SIM Card",
     "form.memoryCard": "Memory Card",
@@ -423,6 +426,9 @@ const translations: Record<Language, Record<string, string>> = {
     // Common
     "common.show": "Mostrar",
     "common.hide": "Ocultar",
+    "common.save": "Guardar",
+    "common.saveChanges": "Guardar Alterações",
+    "common.allDevices": "Todos os Dispositivos",
     "form.equipmentCheck": "Verificação de Equipamento",
     "form.simCard": "Cartão SIM",
     "form.memoryCard": "Cartão de Memória",
