@@ -172,9 +172,25 @@ export default function BillingPage() {
         })
 
         if (!paymentResponse.ok) {
-          const errorData = await paymentResponse.json().catch(() => ({}))
-          console.error("[Billing] ❌ Failed to create payment request via API:", paymentResponse.status, errorData)
-          throw new Error(errorData.error || `Failed to create payment request: ${paymentResponse.status}`)
+          let errorData: any = {}
+          try {
+            errorData = await paymentResponse.json()
+          } catch (e) {
+            const errorText = await paymentResponse.text().catch(() => "Unknown error")
+            errorData = { error: errorText || `HTTP ${paymentResponse.status}` }
+          }
+          
+          console.error("[Billing] ❌ Failed to create payment request via API:", {
+            status: paymentResponse.status,
+            statusText: paymentResponse.statusText,
+            error: errorData,
+          })
+          
+          // Show detailed error message
+          const errorMessage = errorData.error || errorData.details || `Failed to create payment request (${paymentResponse.status})`
+          const missingFields = errorData.missingFields ? ` Missing: ${errorData.missingFields.join(", ")}` : ""
+          
+          throw new Error(errorMessage + missingFields)
         }
 
         const paymentData = await paymentResponse.json()
@@ -183,8 +199,21 @@ export default function BillingPage() {
         // Receipt email and admin notification email are sent automatically by the API
         console.log("[Billing] ✅ Emails should have been sent automatically")
       } catch (apiError: any) {
-        console.error("[Billing] ❌ Error creating payment request via API:", apiError?.message || apiError)
-        toast.error(`Failed to submit payment: ${apiError?.message || "Please try again"}`)
+        console.error("[Billing] ❌ Error creating payment request via API:", {
+          message: apiError?.message,
+          error: apiError,
+          stack: apiError?.stack,
+        })
+        
+        // Show user-friendly error message
+        let errorMessage = "Failed to submit payment"
+        if (apiError?.message) {
+          errorMessage = apiError.message
+        } else if (apiError?.error) {
+          errorMessage = apiError.error
+        }
+        
+        toast.error(errorMessage)
         setLoading(false)
         return // Don't continue if API call fails
       }

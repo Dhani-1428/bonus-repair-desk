@@ -102,17 +102,38 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user to find tenantId
-    const user = await queryOne(
-      `SELECT tenantId FROM users WHERE id = ?`,
-      [userId]
-    )
+    console.log("[API] Looking up user:", userId)
+    let user
+    try {
+      user = await queryOne(
+        `SELECT tenantId FROM users WHERE id = ?`,
+        [userId]
+      )
+    } catch (dbError: any) {
+      console.error("[API] ❌ Database error looking up user:", dbError?.message || dbError)
+      console.error("[API] Error details:", {
+        code: dbError?.code,
+        sqlState: dbError?.sqlState,
+        sqlMessage: dbError?.sqlMessage,
+      })
+      return NextResponse.json(
+        { 
+          error: "Database error while looking up user",
+          details: process.env.NODE_ENV === "development" ? dbError?.message : undefined,
+        },
+        { status: 500 }
+      )
+    }
 
     if (!user) {
+      console.error("[API] ❌ User not found:", userId)
       return NextResponse.json(
-        { error: "User not found" },
+        { error: `User not found with ID: ${userId}` },
         { status: 404 }
       )
     }
+    
+    console.log("[API] ✅ User found, tenantId:", user.tenantId)
 
     const paymentId = uuidv4()
 
@@ -277,14 +298,38 @@ export async function POST(request: NextRequest) {
     console.error("[API] ❌ Error creating payment request:", error?.message || error)
     console.error("[API] Error details:", {
       code: error?.code,
+      errno: error?.errno,
       sqlState: error?.sqlState,
       sqlMessage: error?.sqlMessage,
       stack: error?.stack?.substring(0, 500),
     })
+    
+    // Determine specific error message
+    let errorMessage = "Failed to create payment request"
+    let errorDetails: any = {}
+    
+    if (error?.code === "ER_NO_SUCH_TABLE") {
+      errorMessage = "Database table 'payment_requests' does not exist. Please run the database initialization script."
+      errorDetails.table = "payment_requests"
+    } else if (error?.code === "ER_DUP_ENTRY") {
+      errorMessage = "Payment request already exists with this ID. Please try again."
+    } else if (error?.code === "ECONNREFUSED" || error?.code === "ETIMEDOUT") {
+      errorMessage = "Database connection failed. Please try again later."
+    } else if (error?.code === "ER_ACCESS_DENIED_ERROR") {
+      errorMessage = "Database authentication failed. Please check database credentials."
+    } else if (error?.code === "ER_BAD_DB_ERROR") {
+      errorMessage = `Database '${process.env.DB_NAME || "unknown"}' not found. Please check your database configuration.`
+    } else if (error?.message) {
+      errorMessage = error.message
+    }
+    
     return NextResponse.json(
       { 
-        error: "Failed to create payment request",
+        error: errorMessage,
         details: process.env.NODE_ENV === "development" ? error?.message : undefined,
+        code: process.env.NODE_ENV === "development" ? error?.code : undefined,
+        sqlState: process.env.NODE_ENV === "development" ? error?.sqlState : undefined,
+        ...errorDetails,
       },
       { status: 500 }
     )
