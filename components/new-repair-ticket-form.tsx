@@ -393,8 +393,8 @@ export function NewRepairTicketForm() {
       </CardHeader>
       <CardContent className="p-6 text-white">
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Customer Information - Larger, more clickable */}
-          <div className="grid gap-6 grid-cols-2 border-b border-gray-800 pb-6">
+          {/* Customer Information - All three fields in one line */}
+          <div className="grid gap-6 grid-cols-3 border-b border-gray-800 pb-6">
             <div className="space-y-3">
               <Label htmlFor="clientId" className="text-gray-200 text-base font-semibold">Client ID (Auto-generated)</Label>
               <Input
@@ -418,8 +418,7 @@ export function NewRepairTicketForm() {
                 className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 focus:border-blue-500 h-12 text-lg"
               />
             </div>
-
-            <div className="space-y-3 col-span-2">
+            <div className="space-y-3">
               <Label htmlFor="contact" className="text-gray-200 text-base font-semibold">Client Phone *</Label>
               <Input
                 id="contact"
@@ -722,19 +721,16 @@ export function NewRepairTicketForm() {
                     <Label className="text-gray-200">{t("form.serviceNames")} *</Label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-gray-800/50 rounded-md border border-gray-700 p-3">
                       {[
-                        "LCD Repair",
-                        "Phone dead",
-                        "Restarting problem",
-                        "Software problem",
-                        "Camera",
-                        "Back Panel",
-                        "Mobile Body Replacement",
-                        "Network Issue",
-                        "Battery Replacement",
-                        "Charging Port & Power issue",
-                        "Software & Os troubleshooting",
-                        "Speaker repair",
-                        "Water Damage Treatment",
+                        "LCD",
+                        "Battery",
+                        "Charging Port",
+                        "Microphone",
+                        "Ear speaker",
+                        "Back cover",
+                        "Wifi/Bluetooth",
+                        "Network",
+                        "Software",
+                        "Shut off",
                       ].map((service) => (
                         <label key={service} className="flex items-center gap-2 text-sm text-gray-200 hover:text-white cursor-pointer">
                           <input
