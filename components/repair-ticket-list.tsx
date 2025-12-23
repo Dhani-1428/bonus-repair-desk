@@ -72,7 +72,7 @@ export function RepairTicketList() {
               </svg>
             </div>
             <p className="text-gray-300 text-lg font-medium">{t("dashboard.noRepairDevicesYet")}</p>
-            <p className="text-sm text-gray-400 mt-2">Create your first device entry to get started</p>
+            <p className="text-sm text-gray-400 mt-2">{t("dashboard.createFirstDevice")}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -115,11 +115,15 @@ export function RepairTicketList() {
                       {ticket.imeiNo}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-300 border-r border-gray-800/30 max-w-xs truncate">
-                      {ticket.serviceName || "N/A"}
+                      {ticket.serviceName || t("common.notAvailable")}
                     </td>
                     <td className="px-4 py-3 text-sm border-r border-gray-800/30 whitespace-nowrap">
                       <Badge className={`${getStatusColor(ticket.status)} text-xs px-2 py-1`}>
-                        {ticket.status.replace("_", " ")}
+                        {ticket.status === "pending" || ticket.status === "PENDING" ? t("status.pending") :
+                         ticket.status === "in_progress" || ticket.status === "IN_PROGRESS" ? t("status.in_progress") :
+                         ticket.status === "completed" || ticket.status === "COMPLETED" ? t("status.completed") :
+                         ticket.status === "delivered" || ticket.status === "DELIVERED" ? t("status.delivered") :
+                         ticket.status.replace("_", " ")}
                       </Badge>
                     </td>
                     <td className="px-4 py-3 text-sm font-bold text-white border-r border-gray-800/30 whitespace-nowrap">

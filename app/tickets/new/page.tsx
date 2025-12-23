@@ -111,8 +111,8 @@ export default function NewTicketPage() {
             <CardContent className="p-6 text-white">
               {devices.length === 0 ? (
                 <div className="text-center py-8 text-gray-400">
-                  <p>No devices registered yet.</p>
-                  <p className="text-sm mt-2">Create a new repair ticket above to get started.</p>
+                  <p>{t("dashboard.noDevicesRegistered")}</p>
+                  <p className="text-sm mt-2">{t("dashboard.createNewTicketToStart")}</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -123,53 +123,57 @@ export default function NewTicketPage() {
                     >
                       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                         <div>
-                          <p className="text-sm text-gray-400">Repair Number</p>
-                          <p className="font-semibold">{device.repairNumber || "N/A"}</p>
+                          <p className="text-sm text-gray-400">{t("ticket.repairNumber")}</p>
+                          <p className="font-semibold">{device.repairNumber || t("common.notAvailable")}</p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-400">Customer Name</p>
-                          <p className="font-semibold">{device.customerName || "N/A"}</p>
+                          <p className="text-sm text-gray-400">{t("form.customerName")}</p>
+                          <p className="font-semibold">{device.customerName || t("common.notAvailable")}</p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-400">Client's NIF</p>
-                          <p className="font-semibold">{device.clientId || "N/A"}</p>
+                          <p className="text-sm text-gray-400">{t("ticket.clientNif")}</p>
+                          <p className="font-semibold">{device.clientId || t("common.notAvailable")}</p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-400">Contact</p>
-                          <p className="font-semibold">{device.contact || "N/A"}</p>
+                          <p className="text-sm text-gray-400">{t("table.contact")}</p>
+                          <p className="font-semibold">{device.contact || t("common.notAvailable")}</p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-400">Brand - Model</p>
-                          <p className="font-semibold">{device.brand || "N/A"} - {device.model || "N/A"}</p>
+                          <p className="text-sm text-gray-400">{t("ticket.brandModel")}</p>
+                          <p className="font-semibold">{device.brand || t("common.notAvailable")} - {device.model || t("common.notAvailable")}</p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-400">IMEI</p>
-                          <p className="font-semibold">{device.imeiNo || "N/A"}</p>
+                          <p className="text-sm text-gray-400">{t("table.imei")}</p>
+                          <p className="font-semibold">{device.imeiNo || t("common.notAvailable")}</p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-400">Status</p>
+                          <p className="text-sm text-gray-400">{t("table.status")}</p>
                           <p className={`font-semibold ${
                             device.status === "completed" ? "text-green-400" :
                             device.status === "in-progress" ? "text-yellow-400" :
                             "text-blue-400"
                           }`}>
-                            {device.status || "pending"}
+                            {device.status === "pending" || device.status === "PENDING" ? t("status.pending") :
+                             device.status === "in_progress" || device.status === "IN_PROGRESS" || device.status === "in-progress" ? t("status.in_progress") :
+                             device.status === "completed" || device.status === "COMPLETED" ? t("status.completed") :
+                             device.status === "delivered" || device.status === "DELIVERED" ? t("status.delivered") :
+                             device.status || t("status.pending")}
                           </p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-400">Price</p>
+                          <p className="text-sm text-gray-400">{t("table.price")}</p>
                           <p className="font-semibold">€{device.price || "0.00"}</p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-400">Created</p>
+                          <p className="text-sm text-gray-400">{t("ticket.created")}</p>
                           <p className="font-semibold text-xs">
-                            {device.createdAt ? new Date(device.createdAt).toLocaleDateString() : "N/A"}
+                            {device.createdAt ? new Date(device.createdAt).toLocaleDateString() : t("common.notAvailable")}
                           </p>
                         </div>
                       </div>
                       <div className="mt-4 pt-4 border-t border-gray-800">
-                        <p className="text-sm text-gray-400 mb-2">Service: {Array.isArray(device.selectedServices) ? device.selectedServices.join(", ") : device.serviceName || "N/A"}</p>
-                        <p className="text-sm text-gray-400">Problem: {device.problem || "N/A"}</p>
+                        <p className="text-sm text-gray-400 mb-2">{t("ticket.service")} {Array.isArray(device.selectedServices) ? device.selectedServices.join(", ") : device.serviceName || t("common.notAvailable")}</p>
+                        <p className="text-sm text-gray-400">{t("ticket.problem")} {device.problem || t("common.notAvailable")}</p>
                       </div>
                       <div className="mt-4 flex justify-end">
                         <Button
@@ -181,7 +185,7 @@ export default function NewTicketPage() {
                           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                           </svg>
-                          Print Receipt
+                          {t("page.newTicket.print")}
                         </Button>
                       </div>
                     </div>

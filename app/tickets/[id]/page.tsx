@@ -147,12 +147,16 @@ export default function DeviceDetailPage() {
                   {ticket.customerName?.charAt(0)?.toUpperCase() || "?"}
                 </div>
                 <div>
-                  <div className="text-lg font-bold">{ticket.customerName || "N/A"}</div>
-                  <div className="text-sm text-gray-300 font-normal">Repair #{ticket.repairNumber || "N/A"}</div>
+                  <div className="text-lg font-bold">{ticket.customerName || t("common.notAvailable")}</div>
+                  <div className="text-sm text-gray-300 font-normal">{t("ticket.repair")}{ticket.repairNumber || t("common.notAvailable")}</div>
             </div>
               </CardTitle>
               <Badge className={`${getStatusColor(ticket.status)} font-medium px-3 py-1`}>
-                {ticket.status?.replace("_", " ").toUpperCase() || "PENDING"}
+                {ticket.status === "pending" || ticket.status === "PENDING" ? t("status.pending") :
+                 ticket.status === "in_progress" || ticket.status === "IN_PROGRESS" ? t("status.in_progress") :
+                 ticket.status === "completed" || ticket.status === "COMPLETED" ? t("status.completed") :
+                 ticket.status === "delivered" || ticket.status === "DELIVERED" ? t("status.delivered") :
+                 ticket.status?.replace("_", " ").toUpperCase() || t("status.pending")}
               </Badge>
             </div>
           </CardHeader>
@@ -160,84 +164,84 @@ export default function DeviceDetailPage() {
             <div className="space-y-6">
               {/* Customer Information */}
               <div>
-                <h3 className="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wide">Customer Information</h3>
+                <h3 className="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wide">{t("ticket.customerInformation")}</h3>
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-1">
-                    <Label className="text-xs text-gray-400">Client's NIF</Label>
+                    <Label className="text-xs text-gray-400">{t("ticket.clientNif")}</Label>
                     <p className="text-sm text-white">{ticket.clientId || "-"}</p>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-gray-400">Customer Name</Label>
-                    <p className="text-sm text-white">{ticket.customerName || "N/A"}</p>
+                    <Label className="text-xs text-gray-400">{t("form.customerName")}</Label>
+                    <p className="text-sm text-white">{ticket.customerName || t("common.notAvailable")}</p>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-gray-400">Client Phone</Label>
-                    <p className="text-sm text-white">{ticket.contact || "N/A"}</p>
+                    <Label className="text-xs text-gray-400">{t("form.clientPhone")}</Label>
+                    <p className="text-sm text-white">{ticket.contact || t("common.notAvailable")}</p>
                   </div>
             </div>
           </div>
 
               {/* Device Information */}
               <div>
-                <h3 className="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wide">Device Information</h3>
+                <h3 className="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wide">{t("ticket.deviceInformation")}</h3>
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-1">
-                    <Label className="text-xs text-gray-400">Brand</Label>
-                    <p className="text-sm text-white">{ticket.brand || "N/A"}</p>
+                    <Label className="text-xs text-gray-400">{t("form.brand")}</Label>
+                    <p className="text-sm text-white">{ticket.brand || t("common.notAvailable")}</p>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-gray-400">Model</Label>
-                    <p className="text-sm text-white">{ticket.model || "N/A"}</p>
+                    <Label className="text-xs text-gray-400">{t("form.model")}</Label>
+                    <p className="text-sm text-white">{ticket.model || t("common.notAvailable")}</p>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-gray-400">IMEI</Label>
-                    <p className="text-sm text-white font-mono">{ticket.imeiNo || "N/A"}</p>
+                    <Label className="text-xs text-gray-400">{t("table.imei")}</Label>
+                    <p className="text-sm text-white font-mono">{ticket.imeiNo || t("common.notAvailable")}</p>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-gray-400">Serial Number</Label>
+                    <Label className="text-xs text-gray-400">{t("ticket.serialNumber")}</Label>
                     <p className="text-sm text-white">{ticket.serialNo || "-"}</p>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-gray-400">Software Version</Label>
+                    <Label className="text-xs text-gray-400">{t("ticket.softwareVersion")}</Label>
                     <p className="text-sm text-white">{ticket.softwareVersion || "-"}</p>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-gray-400">Warranty</Label>
-                    <p className="text-sm text-white">{ticket.warranty || "Without Warranty"}</p>
+                    <Label className="text-xs text-gray-400">{t("form.warranty")}</Label>
+                    <p className="text-sm text-white">{ticket.warranty || t("form.withoutWarranty")}</p>
             </div>
             </div>
           </div>
 
               {/* Repair Details */}
               <div>
-                <h3 className="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wide">Repair Details</h3>
+                <h3 className="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wide">{t("ticket.repairDetails")}</h3>
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-1">
-                    <Label className="text-xs text-gray-400">Repair Number</Label>
-                    <p className="text-sm text-white font-semibold">{ticket.repairNumber || "N/A"}</p>
+                    <Label className="text-xs text-gray-400">{t("ticket.repairNumber")}</Label>
+                    <p className="text-sm text-white font-semibold">{ticket.repairNumber || t("common.notAvailable")}</p>
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs text-gray-400">SPU</Label>
-                    <p className="text-sm text-white font-semibold">{ticket.spu || "N/A"}</p>
+                    <p className="text-sm text-white font-semibold">{ticket.spu || t("common.notAvailable")}</p>
                   </div>
                   <div className="space-y-1 md:col-span-2">
-                    <Label className="text-xs text-gray-400">Services</Label>
+                    <Label className="text-xs text-gray-400">{t("ticket.services")}</Label>
                     <p className="text-sm text-white">
                       {Array.isArray(ticket.selectedServices) 
                         ? ticket.selectedServices.join(", ") 
-                        : ticket.serviceName || "N/A"}
+                        : ticket.serviceName || t("common.notAvailable")}
                     </p>
                   </div>
                   <div className="space-y-1 md:col-span-2">
-                    <Label className="text-xs text-gray-400">Problem / Technician Notes</Label>
-                    <p className="text-sm text-white whitespace-pre-wrap">{ticket.problem || "N/A"}</p>
+                    <Label className="text-xs text-gray-400">{t("ticket.problemTechnicianNotes")}</Label>
+                    <p className="text-sm text-white whitespace-pre-wrap">{ticket.problem || t("common.notAvailable")}</p>
                   </div>
                   <div className="space-y-1 md:col-span-2">
-                    <Label className="text-xs text-gray-400">Condition</Label>
+                    <Label className="text-xs text-gray-400">{t("form.condition")}</Label>
                     <p className="text-sm text-white whitespace-pre-wrap">{ticket.condition || "-"}</p>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-gray-400">Price</Label>
+                    <Label className="text-xs text-gray-400">{t("table.price")}</Label>
                     <p className="text-lg font-bold text-blue-400">€{Number.parseFloat(ticket.price || 0).toFixed(2)}</p>
                   </div>
                 </div>
@@ -245,32 +249,27 @@ export default function DeviceDetailPage() {
 
               {/* Equipment Check */}
               <div>
-                <h3 className="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wide">Equipment Check</h3>
+                <h3 className="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wide">{t("form.equipmentCheck")}</h3>
                 <div className="grid gap-3 md:grid-cols-3">
                   <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${ticket.battery ? "bg-green-500" : "bg-gray-600"}`}></div>
-                    <span className="text-xs text-gray-400">Battery:</span>
-                    <span className="text-sm text-white">{ticket.battery ? "Yes" : "No"}</span>
+                    <span className="text-xs text-gray-400">{t("form.battery")}:</span>
+                    <span className="text-sm text-white">{ticket.battery ? t("common.yes") : t("common.no")}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${ticket.charger ? "bg-green-500" : "bg-gray-600"}`}></div>
-                    <span className="text-xs text-gray-400">Charger:</span>
-                    <span className="text-sm text-white">{ticket.charger ? "Yes" : "No"}</span>
+                    <span className="text-xs text-gray-400">{t("form.charger")}:</span>
+                    <span className="text-sm text-white">{ticket.charger ? t("common.yes") : t("common.no")}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${ticket.simCard ? "bg-green-500" : "bg-gray-600"}`}></div>
-                    <span className="text-xs text-gray-400">SIM Card:</span>
-                    <span className="text-sm text-white">{ticket.simCard ? "Yes" : "No"}</span>
+                    <span className="text-xs text-gray-400">{t("form.simCard")}:</span>
+                    <span className="text-sm text-white">{ticket.simCard ? t("common.yes") : t("common.no")}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${ticket.memoryCard ? "bg-green-500" : "bg-gray-600"}`}></div>
-                    <span className="text-xs text-gray-400">Memory Card:</span>
-                    <span className="text-sm text-white">{ticket.memoryCard ? "Yes" : "No"}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${ticket.loanEquipment ? "bg-green-500" : "bg-gray-600"}`}></div>
-                    <span className="text-xs text-gray-400">Loan Equipment:</span>
-                    <span className="text-sm text-white">{ticket.loanEquipment ? "Yes" : "No"}</span>
+                    <span className="text-xs text-gray-400">{t("form.memoryCard")}:</span>
+                    <span className="text-sm text-white">{ticket.memoryCard ? t("common.yes") : t("common.no")}</span>
                   </div>
                 </div>
           </div>
@@ -278,17 +277,17 @@ export default function DeviceDetailPage() {
               {/* Observations */}
               {(ticket.equipmentObs || ticket.repairObs) && (
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wide">Observations</h3>
+                  <h3 className="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wide">{t("ticket.observations")}</h3>
                   <div className="grid gap-4 md:grid-cols-2">
                     {ticket.equipmentObs && (
                       <div className="space-y-1">
-                        <Label className="text-xs text-gray-400">Equipment Observations</Label>
+                        <Label className="text-xs text-gray-400">{t("form.equipmentObservations")}</Label>
                         <p className="text-sm text-white whitespace-pre-wrap">{ticket.equipmentObs}</p>
                       </div>
                     )}
                     {ticket.repairObs && (
                       <div className="space-y-1">
-                        <Label className="text-xs text-gray-400">Repair Observations</Label>
+                        <Label className="text-xs text-gray-400">{t("form.repairObservations")}</Label>
                         <p className="text-sm text-white whitespace-pre-wrap">{ticket.repairObs}</p>
                       </div>
                     )}
@@ -303,18 +302,18 @@ export default function DeviceDetailPage() {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-                    <span>Created: {ticket.createdAt ? new Date(ticket.createdAt).toLocaleString() : "N/A"}</span>
+                    <span>{t("ticket.created")}: {ticket.createdAt ? new Date(ticket.createdAt).toLocaleString() : t("common.notAvailable")}</span>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-gray-400">Repair Number</Label>
-                    <p className="text-sm text-white font-semibold">{ticket.repairNumber || "N/A"}</p>
+                    <Label className="text-xs text-gray-400">{t("ticket.repairNumber")}</Label>
+                    <p className="text-sm text-white font-semibold">{ticket.repairNumber || t("common.notAvailable")}</p>
                   </div>
                   {ticket.updatedAt && (
                     <div className="flex items-center gap-2 text-xs text-gray-400">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                       </svg>
-                      <span>Updated: {new Date(ticket.updatedAt).toLocaleString()}</span>
+                      <span>{t("ticket.updated")}: {new Date(ticket.updatedAt).toLocaleString()}</span>
                     </div>
                   )}
                 </div>

@@ -134,7 +134,7 @@ export function StatsCards() {
       >
         <CardHeader className="flex flex-row items-center justify-between pb-3 relative z-10">
           <CardTitle className="text-sm font-semibold text-red-300 uppercase tracking-wide">
-            {t("status.in_progress")} (Not OK)
+            {t("status.in_progress")} {t("status.notOk")}
           </CardTitle>
           <div className="w-12 h-12 bg-red-500/20 rounded-xl flex items-center justify-center shadow-lg ring-2 ring-red-500/50">
             <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

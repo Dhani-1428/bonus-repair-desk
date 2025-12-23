@@ -396,7 +396,7 @@ export function NewRepairTicketForm() {
           {/* Customer Information - All three fields in one line */}
           <div className="grid gap-6 grid-cols-3 border-b border-gray-800 pb-6">
             <div className="space-y-3">
-              <Label htmlFor="clientId" className="text-gray-200 text-base font-semibold">Client ID (Auto-generated)</Label>
+              <Label htmlFor="clientId" className="text-gray-200 text-base font-semibold">{t("form.clientId")}</Label>
               <Input
                 id="clientId"
                 value={clientId}
