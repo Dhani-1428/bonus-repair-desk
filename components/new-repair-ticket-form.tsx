@@ -912,119 +912,119 @@ export function printReceiptForTickets(tickets: any[]) {
     const formattedTime = entryDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
     
     return `
-      <div style="font-family: Arial, sans-serif; width: 100%; font-size: 7pt; line-height: 1.2; page-break-inside: avoid;">
-        <div style="text-align: center; font-weight: bold; font-size: 8pt; margin-bottom: 4px; padding: 3px; background-color: #e0e0e0; border: 1px solid #999;">
+      <div style="font-family: Arial, sans-serif; width: 100%; font-size: 6.5pt; line-height: 1.1; page-break-inside: avoid !important; margin: 0; padding: 0;">
+        <div style="text-align: center; font-weight: bold; font-size: 7pt; margin-bottom: 3px; padding: 2px; background-color: #e0e0e0; border: 1px solid #999;">
           ${copyLabel}
         </div>
-        <div style="display: table; width: 100%; margin-bottom: 6px; border-bottom: 1.5px solid #000; padding-bottom: 5px;">
+        <div style="display: table; width: 100%; margin-bottom: 4px; border-bottom: 1.5px solid #000; padding-bottom: 3px;">
           <div style="display: table-row;">
-            <div style="display: table-cell; width: 50%; vertical-align: top; padding-right: 8px;">
-              <div style="font-weight: bold; font-size: 9pt; margin-bottom: 2px; color: #000;">${shopName}</div>
-              <div style="margin: 1px 0; font-size: 7pt; color: #000; line-height: 1.2;">${companyAddress}</div>
-              <div style="margin: 1px 0; font-size: 7pt; color: #000;">${companyPhone1}${companyPhone2 ? `, ${companyPhone2}` : ""}</div>
-              <div style="margin: 1px 0; font-size: 7pt; color: #000;">${companyEmail}</div>
-              <div style="margin: 1px 0; font-size: 7pt; color: #000;">${companyWebsite}</div>
-              <div style="margin: 1px 0; font-size: 7pt; color: #000;">VAT: ${companyVAT}</div>
+            <div style="display: table-cell; width: 50%; vertical-align: top; padding-right: 6px;">
+              <div style="font-weight: bold; font-size: 8pt; margin-bottom: 1px; color: #000;">${shopName}</div>
+              <div style="margin: 0.5px 0; font-size: 6.5pt; color: #000; line-height: 1.1;">${companyAddress}</div>
+              <div style="margin: 0.5px 0; font-size: 6.5pt; color: #000;">${companyPhone1}${companyPhone2 ? `, ${companyPhone2}` : ""}</div>
+              <div style="margin: 0.5px 0; font-size: 6.5pt; color: #000;">${companyEmail}</div>
+              <div style="margin: 0.5px 0; font-size: 6.5pt; color: #000;">${companyWebsite}</div>
+              <div style="margin: 0.5px 0; font-size: 6.5pt; color: #000;">VAT: ${companyVAT}</div>
             </div>
-            <div style="display: table-cell; width: 50%; vertical-align: top; padding-left: 8px;">
-              <div style="font-weight: bold; font-size: 8pt; margin-bottom: 2px; color: #000;">Client's NIF: ${ticket.clientId || "N/A"}</div>
-              <div style="margin: 1px 0; font-size: 7pt; color: #000;"><strong>Name:</strong> ${ticket.customerName || "N/A"}</div>
-              <div style="margin: 1px 0; font-size: 7pt; color: #000;"><strong>Client Phone:</strong> ${ticket.contact || "N/A"}</div>
+            <div style="display: table-cell; width: 50%; vertical-align: top; padding-left: 6px;">
+              <div style="font-weight: bold; font-size: 7pt; margin-bottom: 1px; color: #000;">Client's NIF: ${ticket.clientId || "N/A"}</div>
+              <div style="margin: 0.5px 0; font-size: 6.5pt; color: #000;"><strong>Name:</strong> ${ticket.customerName || "N/A"}</div>
+              <div style="margin: 0.5px 0; font-size: 6.5pt; color: #000;"><strong>Client Phone:</strong> ${ticket.contact || "N/A"}</div>
             </div>
           </div>
         </div>
         
-        <div style="margin: 4px 0;">
-          <div style="display: table; width: 100%; margin: 1px 0;">
-            <div style="display: table-cell; width: 40%; font-weight: bold; font-size: 7pt;">Entry Date:</div>
-            <div style="display: table-cell; width: 60%; font-size: 7pt;">${formattedDate} ${formattedTime}</div>
+        <div style="margin: 2px 0;">
+          <div style="display: table; width: 100%; margin: 0.5px 0;">
+            <div style="display: table-cell; width: 40%; font-weight: bold; font-size: 6.5pt;">Entry Date:</div>
+            <div style="display: table-cell; width: 60%; font-size: 6.5pt;">${formattedDate} ${formattedTime}</div>
           </div>
-          <div style="display: table; width: 100%; margin: 1px 0;">
-            <div style="display: table-cell; width: 40%; font-weight: bold; font-size: 7pt;">Repair nº:</div>
-            <div style="display: table-cell; width: 60%; font-size: 7pt;">${ticket.repairNumber || "N/A"}</div>
+          <div style="display: table; width: 100%; margin: 0.5px 0;">
+            <div style="display: table-cell; width: 40%; font-weight: bold; font-size: 6.5pt;">Repair nº:</div>
+            <div style="display: table-cell; width: 60%; font-size: 6.5pt;">${ticket.repairNumber || "N/A"}</div>
           </div>
-          <div style="display: table; width: 100%; margin: 1px 0;">
-            <div style="display: table-cell; width: 40%; font-weight: bold; font-size: 7pt;">IMEI:</div>
-            <div style="display: table-cell; width: 60%; font-size: 7pt;">${ticket.imeiNo || "000000000000000"}</div>
+          <div style="display: table; width: 100%; margin: 0.5px 0;">
+            <div style="display: table-cell; width: 40%; font-weight: bold; font-size: 6.5pt;">IMEI:</div>
+            <div style="display: table-cell; width: 60%; font-size: 6.5pt;">${ticket.imeiNo || "000000000000000"}</div>
           </div>
-          <div style="display: table; width: 100%; margin: 1px 0;">
-            <div style="display: table-cell; width: 40%; font-weight: bold; font-size: 7pt;">Brand-Model:</div>
-            <div style="display: table-cell; width: 60%; font-size: 7pt;">${ticket.brand || "N/A"} - ${ticket.model || "N/A"}</div>
+          <div style="display: table; width: 100%; margin: 0.5px 0;">
+            <div style="display: table-cell; width: 40%; font-weight: bold; font-size: 6.5pt;">Brand-Model:</div>
+            <div style="display: table-cell; width: 60%; font-size: 6.5pt;">${ticket.brand || "N/A"} - ${ticket.model || "N/A"}</div>
           </div>
-          <div style="display: table; width: 100%; margin: 1px 0;">
-            <div style="display: table-cell; width: 40%; font-weight: bold; font-size: 7pt;">Laptop Serial Nº:</div>
-            <div style="display: table-cell; width: 60%; font-size: 7pt;">${ticket.serialNo || "-"}</div>
+          <div style="display: table; width: 100%; margin: 0.5px 0;">
+            <div style="display: table-cell; width: 40%; font-weight: bold; font-size: 6.5pt;">Laptop Serial Nº:</div>
+            <div style="display: table-cell; width: 60%; font-size: 6.5pt;">${ticket.serialNo || "-"}</div>
           </div>
-          <div style="display: table; width: 100%; margin: 1px 0;">
-            <div style="display: table-cell; width: 40%; font-weight: bold; font-size: 7pt;">Warranty:</div>
-            <div style="display: table-cell; width: 60%; font-size: 7pt;">${ticket.warranty || "Without Warranty"}</div>
-          </div>
-        </div>
-        
-        <div style="margin: 4px 0;">
-          <div style="font-weight: bold; margin-bottom: 2px; font-size: 7pt;">Equipment Check:</div>
-          <div style="display: table; width: 100%; margin: 1px 0;">
-            <div style="display: table-cell; width: 30%; font-weight: bold; font-size: 7pt;">SIM Card:</div>
-            <div style="display: table-cell; width: 70%; font-size: 7pt;">${ticket.simCard ? "Yes" : "No"}</div>
-          </div>
-          <div style="display: table; width: 100%; margin: 1px 0;">
-            <div style="display: table-cell; width: 30%; font-weight: bold; font-size: 7pt;">Memory Card:</div>
-            <div style="display: table-cell; width: 70%; font-size: 7pt;">${ticket.memoryCard ? "Yes" : "No"}</div>
-          </div>
-          <div style="display: table; width: 100%; margin: 1px 0;">
-            <div style="display: table-cell; width: 30%; font-weight: bold; font-size: 7pt;">Charger:</div>
-            <div style="display: table-cell; width: 70%; font-size: 7pt;">${ticket.charger ? "Yes" : "No"}</div>
-          </div>
-          <div style="display: table; width: 100%; margin: 1px 0;">
-            <div style="display: table-cell; width: 30%; font-weight: bold; font-size: 7pt;">Battery:</div>
-            <div style="display: table-cell; width: 70%; font-size: 7pt;">${ticket.battery ? "Yes" : "No"}</div>
-          </div>
-          <div style="display: table; width: 100%; margin: 1px 0;">
-            <div style="display: table-cell; width: 30%; font-weight: bold; font-size: 7pt;">Water Damaged:</div>
-            <div style="display: table-cell; width: 70%; font-size: 7pt;">${ticket.waterDamaged ? "Yes" : "No"}</div>
+          <div style="display: table; width: 100%; margin: 0.5px 0;">
+            <div style="display: table-cell; width: 40%; font-weight: bold; font-size: 6.5pt;">Warranty:</div>
+            <div style="display: table-cell; width: 60%; font-size: 6.5pt;">${ticket.warranty || "Without Warranty"}</div>
           </div>
         </div>
         
-        <div style="margin: 4px 0;">
-          <div style="display: table; width: 100%; margin: 1px 0;">
-            <div style="display: table-cell; width: 40%; font-weight: bold; font-size: 7pt;">Equipment Obs.:</div>
-            <div style="display: table-cell; width: 60%; font-size: 7pt;">${ticket.equipmentObs || "-"}</div>
+        <div style="margin: 2px 0;">
+          <div style="font-weight: bold; margin-bottom: 1px; font-size: 6.5pt;">Equipment Check:</div>
+          <div style="display: table; width: 100%; margin: 0.5px 0;">
+            <div style="display: table-cell; width: 30%; font-weight: bold; font-size: 6.5pt;">SIM Card:</div>
+            <div style="display: table-cell; width: 70%; font-size: 6.5pt;">${ticket.simCard ? "Yes" : "No"}</div>
           </div>
-          <div style="display: table; width: 100%; margin: 1px 0;">
-          <div style="display: table; width: 100%; margin: 1px 0;">
-            <div style="display: table-cell; width: 40%; font-weight: bold; font-size: 7pt;">Repair Obs.:</div>
-            <div style="display: table-cell; width: 60%; font-size: 7pt;">${ticket.repairObs || "-"}</div>
+          <div style="display: table; width: 100%; margin: 0.5px 0;">
+            <div style="display: table-cell; width: 30%; font-weight: bold; font-size: 6.5pt;">Memory Card:</div>
+            <div style="display: table-cell; width: 70%; font-size: 6.5pt;">${ticket.memoryCard ? "Yes" : "No"}</div>
           </div>
-          <div style="display: table; width: 100%; margin: 1px 0;">
-            <div style="display: table-cell; width: 40%; font-weight: bold; font-size: 7pt;">Services:</div>
-            <div style="display: table-cell; width: 60%; font-size: 7pt;">${services}</div>
+          <div style="display: table; width: 100%; margin: 0.5px 0;">
+            <div style="display: table-cell; width: 30%; font-weight: bold; font-size: 6.5pt;">Charger:</div>
+            <div style="display: table-cell; width: 70%; font-size: 6.5pt;">${ticket.charger ? "Yes" : "No"}</div>
           </div>
-          <div style="display: table; width: 100%; margin: 1px 0;">
-            <div style="display: table-cell; width: 40%; font-weight: bold; font-size: 7pt;">Problem:</div>
-            <div style="display: table-cell; width: 60%; font-size: 7pt;">${ticket.problem || "-"}</div>
+          <div style="display: table; width: 100%; margin: 0.5px 0;">
+            <div style="display: table-cell; width: 30%; font-weight: bold; font-size: 6.5pt;">Battery:</div>
+            <div style="display: table-cell; width: 70%; font-size: 6.5pt;">${ticket.battery ? "Yes" : "No"}</div>
           </div>
-          <div style="display: table; width: 100%; margin: 1px 0;">
-            <div style="display: table-cell; width: 40%; font-weight: bold; font-size: 7pt;">Price:</div>
-            <div style="display: table-cell; width: 60%; font-size: 7pt;">€${Number.parseFloat(ticket.price || 0).toFixed(2)}</div>
+          <div style="display: table; width: 100%; margin: 0.5px 0;">
+            <div style="display: table-cell; width: 30%; font-weight: bold; font-size: 6.5pt;">Water Damaged:</div>
+            <div style="display: table-cell; width: 70%; font-size: 6.5pt;">${ticket.waterDamaged ? "Yes" : "No"}</div>
           </div>
         </div>
         
-        <div style="margin: 6px 0; padding: 5px; background-color: #f0f0f0; text-align: center; font-weight: bold; font-size: 7.5pt; border: 1px solid #ddd;">
+        <div style="margin: 2px 0;">
+          <div style="display: table; width: 100%; margin: 0.5px 0;">
+            <div style="display: table-cell; width: 40%; font-weight: bold; font-size: 6.5pt;">Equipment Obs.:</div>
+            <div style="display: table-cell; width: 60%; font-size: 6.5pt;">${ticket.equipmentObs || "-"}</div>
+          </div>
+          <div style="display: table; width: 100%; margin: 0.5px 0;">
+          <div style="display: table; width: 100%; margin: 0.5px 0;">
+            <div style="display: table-cell; width: 40%; font-weight: bold; font-size: 6.5pt;">Repair Obs.:</div>
+            <div style="display: table-cell; width: 60%; font-size: 6.5pt;">${ticket.repairObs || "-"}</div>
+          </div>
+          <div style="display: table; width: 100%; margin: 0.5px 0;">
+            <div style="display: table-cell; width: 40%; font-weight: bold; font-size: 6.5pt;">Services:</div>
+            <div style="display: table-cell; width: 60%; font-size: 6.5pt;">${services}</div>
+          </div>
+          <div style="display: table; width: 100%; margin: 0.5px 0;">
+            <div style="display: table-cell; width: 40%; font-weight: bold; font-size: 6.5pt;">Problem:</div>
+            <div style="display: table-cell; width: 60%; font-size: 6.5pt;">${ticket.problem || "-"}</div>
+          </div>
+          <div style="display: table; width: 100%; margin: 0.5px 0;">
+            <div style="display: table-cell; width: 40%; font-weight: bold; font-size: 6.5pt;">Price:</div>
+            <div style="display: table-cell; width: 60%; font-size: 6.5pt;">€${Number.parseFloat(ticket.price || 0).toFixed(2)}</div>
+          </div>
+        </div>
+        
+        <div style="margin: 3px 0; padding: 3px; background-color: #f0f0f0; text-align: center; font-weight: bold; font-size: 6.5pt; border: 1px solid #ddd;">
           WE ARE RESPONSIBLE FOR THE ASSISTANCE / REPAIRING OF THE DESCRIBED ANOMALIES.
         </div>
         
-        <div style="margin-top: 6px; padding: 5px; background-color: #f9f9f9; font-size: 6.5pt; line-height: 1.3; border: 1px solid #ddd;">
-          <div style="font-weight: bold; margin-bottom: 5px; font-size: 7.5pt;">Condições de Armazenamento e Levantamento</div>
-          <div style="text-align: justify; margin-bottom: 4px;">
+        <div style="margin-top: 3px; padding: 3px; background-color: #f9f9f9; font-size: 6pt; line-height: 1.2; border: 1px solid #ddd;">
+          <div style="font-weight: bold; margin-bottom: 3px; font-size: 6.5pt;">Condições de Armazenamento e Levantamento</div>
+          <div style="text-align: justify; margin-bottom: 2px;">
             O equipamento deverá ser levantado no prazo máximo de sessenta (60) dias após a conclusão da reparação e respetiva notificação por <strong>${shopName}</strong>.
           </div>
-          <div style="text-align: justify; margin-bottom: 4px;">
+          <div style="text-align: justify; margin-bottom: 2px;">
             Decorrido este prazo, será aplicada uma taxa de armazenamento de 0,95 € por dia, a partir do 61.º dia, até ao limite máximo de cento e vinte (120) dias, aplicável independentemente de a reparação ter sido realizada ou de o orçamento ter sido recusado.
           </div>
-          <div style="text-align: justify; margin-bottom: 4px;">
+          <div style="text-align: justify; margin-bottom: 2px;">
             Ao aceitar o presente documento, o cliente declara que leu, compreendeu e aceita os termos e condições de reparação.
           </div>
-          <div style="margin-top: 5px; font-weight: bold; font-size: 7pt;">Referência da Reparação: ${ticket.repairNumber || "N/A"}</div>
+          <div style="margin-top: 3px; font-weight: bold; font-size: 6.5pt;">Referência da Reparação: ${ticket.repairNumber || "N/A"}</div>
         </div>
       </div>
     `
@@ -1036,13 +1036,13 @@ export function printReceiptForTickets(tickets: any[]) {
     const adminCopy = generateReceiptHTML(ticket, 'ADMIN')
     
     return `
-      <div class="ticket-container" style="page-break-inside: avoid; page-break-after: avoid; break-inside: avoid; break-after: avoid; margin-bottom: 10px; width: 100%;">
+      <div class="ticket-container" style="page-break-inside: avoid !important; page-break-after: avoid !important; break-inside: avoid !important; break-after: avoid !important; margin: 0; padding: 0; width: 100%; height: auto; overflow: hidden;">
         <!-- Client's Copy (Top) -->
-        <div style="width: 100%; margin-bottom: 15px; page-break-inside: avoid; border-bottom: 2px dashed #999; padding-bottom: 10px;">
+        <div style="width: 100%; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 2px dashed #999; page-break-inside: avoid !important; break-inside: avoid !important;">
           ${clientCopy}
         </div>
         <!-- Admin's Copy (Bottom) -->
-        <div style="width: 100%; page-break-inside: avoid;">
+        <div style="width: 100%; margin-top: 0; padding-top: 0; page-break-inside: avoid !important; break-inside: avoid !important;">
           ${adminCopy}
         </div>
       </div>
@@ -1058,12 +1058,12 @@ export function printReceiptForTickets(tickets: any[]) {
           <style>
             @page {
               size: A4 portrait;
-              margin: 5mm;
+              margin: 3mm;
             }
             @media print {
               @page {
                 size: A4 portrait;
-                margin: 5mm;
+                margin: 3mm;
               }
               body {
                 margin: 0;
@@ -1117,10 +1117,10 @@ export function printReceiptForTickets(tickets: any[]) {
             }
             body {
               font-family: Arial, sans-serif;
-              font-size: 7pt;
-              line-height: 1.2;
+              font-size: 6.5pt;
+              line-height: 1.1;
               margin: 0;
-              padding: 5mm;
+              padding: 3mm;
               color: #000;
               width: 100%;
               box-sizing: border-box;
