@@ -127,6 +127,8 @@ const translations: Record<Language, Record<string, string>> = {
     "success.deviceUpdated": "Device updated successfully!",
     "error.deviceUpdateFailed": "Failed to update device",
     "error.deviceDeleteFailed": "Failed to delete device",
+    "error.ticketStatusUpdateFailed": "Failed to update ticket status",
+    "success.deviceMovedToTrash": "Device moved to trash",
 
     // SearchRepairTickets
     "search.title": "Search Devices",
@@ -470,6 +472,8 @@ const translations: Record<Language, Record<string, string>> = {
     "success.deviceUpdated": "Dispositivo atualizado com sucesso!",
     "error.deviceUpdateFailed": "Falha ao atualizar dispositivo",
     "error.deviceDeleteFailed": "Falha ao eliminar dispositivo",
+    "error.ticketStatusUpdateFailed": "Falha ao atualizar estado do bilhete",
+    "success.deviceMovedToTrash": "Dispositivo movido para o lixo",
 
     // SearchRepairTickets
     "search.title": "Pesquisar dispositivos",

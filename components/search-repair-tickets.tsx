@@ -291,7 +291,7 @@ export function SearchRepairTickets({ initialStatusFilter }: SearchRepairTickets
       }
     } catch (error) {
       console.error("[SearchRepairTickets] Error updating ticket status:", error)
-      toast.error("Failed to update ticket status")
+      toast.error(t("error.ticketStatusUpdateFailed"))
     }
   }
 
@@ -373,7 +373,7 @@ export function SearchRepairTickets({ initialStatusFilter }: SearchRepairTickets
         const storedTickets = await getUserData<any[]>("repairTickets", [])
         const reloadedTickets = Array.isArray(storedTickets) ? storedTickets : []
         setTickets(reloadedTickets)
-        toast.success("Device moved to trash")
+        toast.success(t("success.deviceMovedToTrash"))
       } else {
         const data = await response.json()
         throw new Error(data.error || t("error.deviceDeleteFailed"))
