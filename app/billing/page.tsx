@@ -25,21 +25,54 @@ export default function BillingPage() {
   const [loading, setLoading] = useState(false)
   const [showMbwayModal, setShowMbwayModal] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   // Get plan from URL query parameter
   useEffect(() => {
-    const planParam = searchParams.get("plan")
-    if (planParam && ["MONTHLY", "THREE_MONTH", "SIX_MONTH", "TWELVE_MONTH"].includes(planParam)) {
-      setSelectedPlan(planParam as SubscriptionPlan)
+    try {
+      const planParam = searchParams.get("plan")
+      if (planParam && ["MONTHLY", "THREE_MONTH", "SIX_MONTH", "TWELVE_MONTH"].includes(planParam)) {
+        setSelectedPlan(planParam as SubscriptionPlan)
+      }
+    } catch (err: any) {
+      console.error("[Billing] Error parsing plan param:", err)
+      setError(err?.message || "Failed to load billing page")
     }
   }, [searchParams])
 
   // Redirect if not logged in
   useEffect(() => {
-    if (!user) {
-      router.push("/login")
+    try {
+      if (!user) {
+        router.push("/login")
+      }
+    } catch (err: any) {
+      console.error("[Billing] Error checking user:", err)
+      setError(err?.message || "Failed to check authentication")
     }
   }, [user, router])
+
+  if (error) {
+    return (
+      <DashboardLayout>
+        <div className="space-y-6 text-white p-6">
+          <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+            <h2 className="text-xl font-bold text-red-400 mb-2">Error Loading Billing Page</h2>
+            <p className="text-gray-300">{error}</p>
+            <Button
+              onClick={() => {
+                setError(null)
+                window.location.reload()
+              }}
+              className="mt-4"
+            >
+              Reload Page
+            </Button>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
+  }
 
   if (!user) {
     return null
