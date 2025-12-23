@@ -83,12 +83,12 @@ export default function PricingPage() {
                 )}
                 <CardHeader className="pb-8 pt-8">
                   <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
-                  <CardDescription className="text-base">{plan.period} subscription</CardDescription>
+                  <CardDescription className="text-base">{plan.id === "SIX_MONTH" ? t("subscription.sixMonths") : t("subscription.twelveMonths")} {t("subscription.subscription")}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-8">
                   <div className="flex items-baseline gap-2">
                     <span className="text-5xl font-bold tracking-tight">€{plan.price}</span>
-                    <span className="text-muted-foreground text-lg">/ {plan.period}</span>
+                    <span className="text-muted-foreground text-lg">/ {plan.id === "SIX_MONTH" ? t("subscription.sixMonths") : t("subscription.twelveMonths")}</span>
                   </div>
                   <ul className="space-y-3">
                     {plan.features.map((feature) => (
