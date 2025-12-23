@@ -73,14 +73,14 @@ export default function SubscriptionPage() {
       id: "SIX_MONTH" as SubscriptionPlan,
       name: t("plan.professional"),
       price: 100,
-      period: "6 months",
+      period: t("subscription.sixMonths"),
       popular: true,
     },
     {
       id: "TWELVE_MONTH" as SubscriptionPlan,
       name: t("plan.enterprise"),
       price: 150,
-      period: "12 months",
+      period: t("subscription.twelveMonths"),
       popular: false,
     },
   ]
@@ -388,8 +388,8 @@ export default function SubscriptionPage() {
                 <CardHeader className="pb-4">
                   <CardTitle className="text-xl text-white">{plan.name}</CardTitle>
                   <CardDescription className="text-gray-400">
-                    {plan.period === "6 months" ? t("subscription.sixMonthSubscription") :
-                     plan.period === "12 months" ? t("subscription.twelveMonthSubscription") :
+                    {plan.period === t("subscription.sixMonths") ? t("subscription.sixMonthSubscription") :
+                     plan.period === t("subscription.twelveMonths") ? t("subscription.twelveMonthSubscription") :
                      `${plan.period} subscription`}
                   </CardDescription>
                 </CardHeader>

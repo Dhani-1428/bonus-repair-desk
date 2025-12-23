@@ -19,7 +19,7 @@ const pricingPlans = [
   {
     name: "6 Months",
     price: 100,
-    duration: "6 months",
+    duration: "6 months", // Will be translated in component
     description: "Great value for medium-term needs",
     popular: true,
     planId: "SIX_MONTH" as SubscriptionPlan,
@@ -27,7 +27,7 @@ const pricingPlans = [
   {
     name: "12 Months",
     price: 150,
-    duration: "12 months",
+    duration: "12 months", // Will be translated in component
     description: "Best value for long-term commitment",
     popular: false,
     planId: "TWELVE_MONTH" as SubscriptionPlan,
@@ -37,6 +37,7 @@ const pricingPlans = [
 export function PricingSection() {
   const router = useRouter()
   const { user } = useAuth()
+  const { t } = useTranslation()
 
   const handleSubscribe = (plan: typeof pricingPlans[0]) => {
     if (plan.planId === null) {
@@ -118,7 +119,7 @@ export function PricingSection() {
                 <div className="flex items-baseline justify-center gap-1 mb-2">
                   <span className="text-4xl font-bold text-white">€{plan.price}</span>
                 </div>
-                <p className="text-white/60 text-sm mb-1">{plan.duration}</p>
+                <p className="text-white/60 text-sm mb-1">{plan.duration === "6 months" ? t("subscription.sixMonths") : plan.duration === "12 months" ? t("subscription.twelveMonths") : plan.duration}</p>
                 <p className="text-white/60 text-sm">{plan.description}</p>
               </div>
 

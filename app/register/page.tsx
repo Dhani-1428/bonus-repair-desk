@@ -331,7 +331,7 @@ export default function RegisterPage() {
                           <div className="text-center">
                             <p className="font-semibold text-white text-sm mb-1">{planDetails.name}</p>
                             <p className="text-xs text-gray-400 mb-2">
-                              {planKey === "SIX_MONTH" ? "6 months" : "12 months"}
+                              {planKey === "SIX_MONTH" ? t("subscription.sixMonths") : t("subscription.twelveMonths")}
                             </p>
                             <p className="text-lg font-bold text-white">€{planDetails.price}</p>
                             <p className="text-xs text-gray-400">After trial</p>

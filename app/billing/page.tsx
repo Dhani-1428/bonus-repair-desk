@@ -357,7 +357,7 @@ export default function BillingPage() {
                           )}
                         </div>
                         <p className="text-2xl font-bold text-white mb-1">€{plan.price}</p>
-                        <p className="text-sm text-gray-400">for {plan.months} month{plan.months > 1 ? "s" : ""}</p>
+                        <p className="text-sm text-gray-400">{t("subscription.for")} {plan.months === 6 ? t("subscription.sixMonths") : plan.months === 12 ? t("subscription.twelveMonths") : `${plan.months} ${t("subscription.months")}`}</p>
                       </CardContent>
                     </Card>
                   ))}

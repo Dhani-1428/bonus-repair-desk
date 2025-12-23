@@ -3,42 +3,43 @@ import { Navbar } from "@/components/navbar"
 import { Check, Sparkles } from "lucide-react"
 import { SubscribeButton } from "./subscribe-button"
 
-const plans = [
-  {
-    id: "SIX_MONTH",
-    name: "Professional",
-    price: 100,
-    period: "6 months",
-    duration: "6 months",
-    popular: true,
-    features: [
-      "Everything in Starter",
-      "Priority email support",
-      "Advanced analytics",
-      "Custom dashboard",
-      "API access",
-      "Save €10",
-    ],
-  },
-  {
-    id: "TWELVE_MONTH",
-    name: "Enterprise",
-    price: 150,
-    period: "12 months",
-    duration: "12 months",
-    popular: false,
-    features: [
-      "Everything in Professional",
-      "24/7 premium support",
-      "Custom branding",
-      "Dedicated account manager",
-      "Priority updates",
-      "Save €50",
-    ],
-  },
-]
-
 export default function PricingPage() {
+  const { t } = useTranslation()
+  
+  const plans = [
+    {
+      id: "SIX_MONTH",
+      name: "Professional",
+      price: 100,
+      period: t("subscription.sixMonths"),
+      duration: t("subscription.sixMonths"),
+      popular: true,
+      features: [
+        "Everything in Starter",
+        "Priority email support",
+        "Advanced analytics",
+        "Custom dashboard",
+        "API access",
+        "Save €10",
+      ],
+    },
+    {
+      id: "TWELVE_MONTH",
+      name: "Enterprise",
+      price: 150,
+      period: t("subscription.twelveMonths"),
+      duration: t("subscription.twelveMonths"),
+      popular: false,
+      features: [
+        "Everything in Professional",
+        "24/7 premium support",
+        "Custom branding",
+        "Dedicated account manager",
+        "Priority updates",
+        "Save €50",
+      ],
+    },
+  ]
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
