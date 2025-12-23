@@ -424,7 +424,6 @@ export function NewRepairTicketForm() {
             brand: ticket.brand || device.brand || "N/A",
             model: ticket.model || device.model,
             serialNo: ticket.serialNo || null,
-            softwareVersion: ticket.softwareVersion || null,
             warranty: ticket.warranty || "Without Warranty",
             battery: ticket.battery ?? false,
             charger: ticket.charger ?? false,
