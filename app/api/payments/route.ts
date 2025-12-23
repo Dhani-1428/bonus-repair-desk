@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
     
     console.log("[API] ✅ User found, tenantId:", user.tenantId)
 
-    // Ensure payment_requests table exists
+    // Ensure payment_requests table exists (without foreign key to avoid constraint issues)
     try {
       await execute(`
         CREATE TABLE IF NOT EXISTS payment_requests (
@@ -159,9 +159,16 @@ export async function POST(request: NextRequest) {
       console.log("[API] ✅ payment_requests table verified/created")
     } catch (tableError: any) {
       // If table already exists, that's fine - continue
-      if (tableError?.code !== "ER_TABLE_EXISTS_ERROR") {
+      if (tableError?.code === "ER_TABLE_EXISTS_ERROR" || tableError?.code === 1050) {
+        console.log("[API] ℹ️  payment_requests table already exists")
+      } else {
         console.error("[API] ⚠️  Error ensuring payment_requests table exists:", tableError?.message || tableError)
-        // Continue anyway - table might already exist
+        console.error("[API] Table error details:", {
+          code: tableError?.code,
+          sqlState: tableError?.sqlState,
+          sqlMessage: tableError?.sqlMessage,
+        })
+        // Continue anyway - table might already exist with different structure
       }
     }
 
